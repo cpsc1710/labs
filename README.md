@@ -24,4 +24,4 @@ Then visit `http://localhost:8000/`.
 
 ## Credits
 
-Materials are by [Xiuye Chen](https://github.com/xiuyechen), developed with Codex, and shared under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+Materials are by [Xiuye Chen](https://github.com/xiuyechen), developed with Codex and Claude, and shared under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
