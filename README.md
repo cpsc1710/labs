@@ -8,7 +8,7 @@ Student-facing assignments and starter materials for CPSC 1710, Fall 2026.
 - [Lab 2: From one pixel to your classifier](lab-02/)
 - [Lab 3: MNIST, and what the code is doing](lab-03/)
 
-Use the [live course hub](https://xiuyechen.github.io/cpsc1710-labs/) for the simplest experience. Each assignment is available as a webpage and a printable PDF.
+Use the [live course hub](https://cpsc1710.github.io/labs/) for the simplest experience. Each assignment is available as a webpage and a printable PDF.
 
 ## Opening the files
 
