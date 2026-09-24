@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Optional, ungraded worksheets that help students understand the code they generate for CPSC 1710 Homework 3.">
+  <meta name="theme-color" content="#101114">
+  <title>HW3 Companion Worksheets</title>
+  <link rel="stylesheet" href="../assets/labs.css">
+  <style>
+    .moves { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 22px 0; }
+    .move { border: var(--line); padding: 12px 13px; background: #f6f4ed; }
+    .move b { display: block; font: 900 .74rem ui-monospace, monospace; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 3px; }
+    .move span { font-size: .88rem; line-height: 1.35; display: block; }
+    .map { width: 100%; border-collapse: collapse; margin: 18px 0 8px; font-size: .9rem; }
+    .map th, .map td { border: 1px solid var(--ink); padding: 8px 10px; text-align: left; vertical-align: top; }
+    .map th { background: var(--ink); color: var(--white); font: 800 .72rem ui-monospace, monospace; text-transform: uppercase; letter-spacing: .05em; }
+    .step-label { display: inline-block; margin: 22px 0 8px; border: 1px solid var(--ink); background: var(--accent); padding: 3px 7px; font: 900 .7rem ui-monospace, monospace; text-transform: uppercase; letter-spacing: .07em; }
+    .trace { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font: .86rem ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .trace th, .trace td { border: 1px solid var(--ink); padding: 7px 8px; text-align: center; }
+    .trace th { background: #f0ede4; font-weight: 800; }
+    .trace td.fill { background: #fff; min-width: 54px; }
+    .trace td.fill::after { content: ""; display: inline-block; width: 40px; }
+    .trace-wrap { overflow-x: auto; }
+    pre.code { margin: 12px 0 18px; background: #17191f; color: #f8f3e7; border: var(--line); padding: 14px 16px; overflow-x: auto; font: 500 .82rem/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .write { display: block; border-bottom: 1.5px solid var(--ink); min-height: 30px; margin: 4px 0 12px; }
+    .write.tall { min-height: 64px; }
+    .sketches { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 14px 0 20px; }
+    .sketch { border: var(--line); height: 170px; position: relative; padding: 8px 10px; font: 800 .72rem ui-monospace, monospace; }
+    .sketch::before { content: ""; position: absolute; left: 34px; bottom: 26px; top: 30px; border-left: 2px solid var(--ink); }
+    .sketch::after { content: ""; position: absolute; left: 34px; right: 14px; bottom: 26px; border-bottom: 2px solid var(--ink); }
+    .sketch small { position: absolute; bottom: 5px; right: 12px; font-weight: 600; }
+    details.check { margin: 14px 0 22px; border: var(--line); background: #fbfaf5; }
+    details.check summary { cursor: pointer; padding: 10px 14px; font: 850 .76rem ui-monospace, monospace; text-transform: uppercase; letter-spacing: .05em; background: var(--accent); }
+    details.check > div { padding: 12px 16px 4px; font-size: .94rem; }
+    .ai-moves { list-style: none; padding: 0; display: grid; gap: 10px; }
+    .ai-moves li { border: 1px solid var(--ink); background: #fff; padding: 11px 14px; }
+    .ai-moves li b { display: block; font: 900 .72rem ui-monospace, monospace; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+    .time { font: 800 .76rem ui-monospace, monospace; color: var(--muted); margin: -12px 0 18px; }
+    @media (max-width: 620px) {
+      .moves { grid-template-columns: 1fr 1fr; }
+      .sketches { grid-template-columns: 1fr; }
+      .map { font-size: .8rem; }
+    }
+    @media print {
+      details.check { display: none; }
+      .sketch { height: 130px; }
+      .trace, pre.code, .sketches, .moves { break-inside: avoid; }
+      pre.code { background: #fff; color: var(--ink); }
+    }
+  </style>
+</head>
+<body>
+  <nav class="sitebar no-print" aria-label="Worksheet controls">
+    <a href="index.html">← Lab 3</a>
+    <div class="actions">
+      <a class="button" href="hw3-python-warmup.ipynb" download>Warm-up notebook</a>
+      <button class="button primary" type="button" onclick="window.print()">Print / Save PDF</button>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <aside class="toc no-print" aria-label="Worksheet contents">
+      <h2>Worksheets</h2>
+      <ol>
+        <li><a href="#how"><b>→</b><span>How to use these</span></a></li>
+        <li><a href="#w1"><b>01</b><span>Load &amp; split</span></a></li>
+        <li><a href="#w2"><b>02</b><span>Baseline, RMSE, R²</span></a></li>
+        <li><a href="#w3"><b>03</b><span>Plot ↔ code</span></a></li>
+        <li><a href="#w4"><b>04</b><span>Overfitting curves</span></a></li>
+        <li><a href="#w5"><b>05</b><span>Decision boundary</span></a></li>
+        <li><a href="#w6"><b>06</b><span>Gradient descent</span></a></li>
+        <li><a href="#w7"><b>07</b><span>Reading Chapter 4</span></a></li>
+        <li><a href="#ai"><b>+</b><span>AI beyond vibe coding</span></a></li>
+      </ol>
+    </aside>
+
+    <main class="paper">
+      <header>
+        <p class="kicker"><span>Homework 3 · Optional companion</span></p>
+        <h1>What does all that code do?</h1>
+        <p class="score">Optional · not graded · about 15 minutes per worksheet</p>
+        <div class="intro">
+          <p>In HW3, an AI can write every code cell for you in seconds. These worksheets help you understand what those cells do. Each one goes with one HW3 question. Keep your own HW3 notebook open beside it, and do as many as you like, in any order.</p>
+          <p><strong>No coding background?</strong> Start with the <a href="hw3-python-warmup.ipynb" download>HW3 warm-up notebook</a>. It introduces the Python you need, one small idea at a time, with self-checking exercises.</p>
+        </div>
+      </header>
+
+      <section class="section" id="how">
+        <div class="section-head"><div><p class="section-label"><span>Start here</span></p><h2>Four moves, every time</h2></div></div>
+        <div class="moves">
+          <div class="move"><b>1 · Predict</b><span>Before running, write down what you expect to see.</span></div>
+          <div class="move"><b>2 · Trace</b><span>Work through the calculation by hand, using tiny numbers.</span></div>
+          <div class="move"><b>3 · Tweak</b><span>Change one thing, predict again, then run.</span></div>
+          <div class="move"><b>4 · Explain</b><span>Close the AI chat. Explain the idea in two sentences of your own.</span></div>
+        </div>
+        <p>A wrong prediction is not a failure. It shows you exactly which line of code to look at again.</p>
+        <table class="map">
+          <thead><tr><th>HW3 question</th><th>Worksheet</th><th>Warm-up notebook</th></tr></thead>
+          <tbody>
+            <tr><td>Q1.1 · 1.1 Load and split</td><td>01</td><td>Sections 7–8</td></tr>
+            <tr><td>Q1.1 · 1.2 and 1.4 Baseline, RMSE, R²</td><td>02</td><td>Section 4</td></tr>
+            <tr><td>Q1.1 · 1.3 Visualization</td><td>03</td><td>Section 9</td></tr>
+            <tr><td>Q1.2 Overfitting demo</td><td>04</td><td>Section 11</td></tr>
+            <tr><td>Q1.3 Decision boundary</td><td>05</td><td>Sections 3, 5</td></tr>
+            <tr><td>Bonus Q1.4 Gradient descent</td><td>06</td><td>Section 10</td></tr>
+            <tr><td>Part 2 · Chapter 4</td><td>07</td><td>Section 6</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- W1 -->
+      <section class="section" id="w1">
+        <div class="section-head"><div><p class="section-label"><span>Worksheet 01 · Q1.1 (1.1)</span></p><h2>Load and split the data</h2></div></div>
+        <p class="time">≈ 10 minutes</p>
+
+        <span class="step-label">Predict · before you prompt</span>
+        <p>1. In the California Housing dataset, what does <strong>one row</strong> describe? What is the <strong>target</strong>, the value we try to predict? (You can look this up.)</p>
+        <span class="write"></span>
+        <p>2. The dataset has 20,640 rows. With a 60/20/20 split, how many rows go to each part?</p>
+        <p>train <span class="write" style="display:inline-block;width:110px"></span> validation <span class="write" style="display:inline-block;width:110px"></span> test <span class="write" style="display:inline-block;width:110px"></span></p>
+
+        <span class="step-label">Trace · after it runs</span>
+        <p>3. Find the line or lines in your code that make the split. Copy the line that sets the sizes:</p>
+        <span class="write"></span>
+        <p>4. Many solutions call <code>train_test_split</code> twice: first with <code>test_size=0.4</code>, then with <code>test_size=0.5</code>. Why does 0.5 in the second call produce 20% of the whole dataset?</p>
+        <span class="write"></span>
+
+        <span class="step-label">Tweak</span>
+        <p>5. Change <code>random_state=42</code> to another number and rerun. Before you run: will the <em>sizes</em> change? Will the <em>first five rows of the training set</em> change?</p>
+        <span class="write"></span>
+
+        <span class="step-label">Explain</span>
+        <p>6. Why do we leave the test set alone until the very end?</p>
+        <span class="write tall"></span>
+
+        <details class="check"><summary>Check your numbers</summary><div>
+          <p>Q2: 12,384 / 4,128 / 4,128. Q4: the second call splits the remaining 40% in half, and half of 40% is 20%. Q5: sizes stay the same; <em>which</em> rows land in each part changes. <code>random_state</code> makes the shuffle repeatable, so everyone who uses 42 gets the same split.</p>
+        </div></details>
+      </section>
+
+      <!-- W2 -->
+      <section class="section orange" id="w2">
+        <div class="section-head"><div><p class="section-label"><span>Worksheet 02 · Q1.1 (1.2, 1.4)</span></p><h2>Baseline, RMSE and R², by hand</h2></div></div>
+        <p class="time">≈ 15 minutes · calculator welcome</p>
+        <p>Four houses, with values in units of $100,000. The <strong>baseline</strong> always guesses the mean, which is 3. The <strong>model</strong> makes its own guesses. For each guess, the error is <em>guess − actual</em>.</p>
+
+        <span class="step-label">Trace</span>
+        <div class="trace-wrap">
+        <table class="trace">
+          <thead><tr><th>house</th><th>actual</th><th>baseline guess</th><th>baseline error</th><th>error²</th><th>model guess</th><th>model error</th><th>error²</th></tr></thead>
+          <tbody>
+            <tr><td>A</td><td>1</td><td>3</td><td>2</td><td>4</td><td>1.5</td><td>0.5</td><td>0.25</td></tr>
+            <tr><td>B</td><td>2</td><td>3</td><td class="fill"></td><td class="fill"></td><td>2</td><td class="fill"></td><td class="fill"></td></tr>
+            <tr><td>C</td><td>3</td><td>3</td><td class="fill"></td><td class="fill"></td><td>3.5</td><td class="fill"></td><td class="fill"></td></tr>
+            <tr><td>D</td><td>6</td><td>3</td><td class="fill"></td><td class="fill"></td><td>5</td><td class="fill"></td><td class="fill"></td></tr>
+            <tr><th colspan="4">mean of error² (MSE)</th><td class="fill"></td><th colspan="2">mean of error² (MSE)</th><td class="fill"></td></tr>
+            <tr><th colspan="4">RMSE = √MSE</th><td class="fill"></td><th colspan="2">RMSE = √MSE</th><td class="fill"></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>R² = 1 − (model MSE ÷ baseline MSE) = <span class="write" style="display:inline-block;width:140px"></span></p>
+
+        <span class="step-label">Trace · in your code</span>
+        <p>Find the line in your notebook that computes RMSE. Copy it, and label the part that does each step: <strong>error</strong>, <strong>square</strong>, <strong>mean</strong>, <strong>root</strong>. (Sometimes a library function does two steps at once.)</p>
+        <span class="write tall"></span>
+
+        <span class="step-label">Explain</span>
+        <p>What does the R² value in <em>your</em> notebook say about your linear model compared with always guessing the mean? Which is better, and by how much?</p>
+        <span class="write tall"></span>
+
+        <details class="check"><summary>Check your numbers</summary><div>
+          <p>Baseline errors 2, 1, 0, −3; squares 4, 1, 0, 9; MSE 3.5; RMSE ≈ 1.87. Model errors 0.5, 0, 0.5, −1; squares 0.25, 0, 0.25, 1; MSE 0.375; RMSE ≈ 0.61. R² = 1 − 0.375/3.5 ≈ 0.89. In words: the model's typical miss is about $61,000, compared with about $187,000 for the baseline.</p>
+          <p>The warm-up notebook, section 4, runs this same example in code.</p>
+        </div></details>
+      </section>
+
+      <!-- W3 -->
+      <section class="section blue" id="w3">
+        <div class="section-head"><div><p class="section-label"><span>Worksheet 03 · Q1.1 (1.3)</span></p><h2>Match the picture to the code</h2></div></div>
+        <p class="time">≈ 10 minutes</p>
+        <p>Every visual element in your plot comes from a specific line of code. For each element, find its line in your notebook and write down the key part, such as <code>"--"</code> or <code>facecolors="none"</code>.</p>
+        <div class="trace-wrap">
+        <table class="trace" style="font-family:inherit">
+          <thead><tr><th style="text-align:left">In the picture</th><th style="text-align:left">The code that draws it</th></tr></thead>
+          <tbody>
+            <tr><td style="text-align:left">dashed regression line</td><td class="fill"></td></tr>
+            <tr><td style="text-align:left">solid observed points</td><td class="fill"></td></tr>
+            <tr><td style="text-align:left">hollow predicted points</td><td class="fill"></td></tr>
+            <tr><td style="text-align:left">dotted residual lines</td><td class="fill"></td></tr>
+            <tr><td style="text-align:left">axis limits</td><td class="fill"></td></tr>
+            <tr><td style="text-align:left">choosing about 12 evenly spaced points</td><td class="fill"></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <span class="step-label">Tweak</span>
+        <p>Predict first, then try each change:</p>
+        <ol>
+          <li>Change the 12 points to 4. What will the plot look like?</li>
+          <li>Make the predicted points filled instead of hollow. Why might hollow be the better choice?</li>
+        </ol>
+        <span class="write"></span>
+
+        <span class="step-label">Explain</span>
+        <p>What does a <em>long</em> residual line mean? What does it mean when the observed point sits <em>above</em> the line?</p>
+        <span class="write tall"></span>
+      </section>
+
+      <!-- W4 -->
+      <section class="section pink" id="w4">
+        <div class="section-head"><div><p class="section-label"><span>Worksheet 04 · Q1.2</span></p><h2>Read the overfitting curves</h2></div></div>
+        <p class="time">≈ 15 minutes</p>
+
+        <span class="step-label">Predict · sketch before you run</span>
+        <p>Draw what you expect the training loss and validation loss to look like in each run. Use two different pens or line styles.</p>
+        <div class="sketches">
+          <div class="sketch">Run A · normal data, few epochs<small>epoch →</small></div>
+          <div class="sketch">Run B · tiny data, many epochs<small>epoch →</small></div>
+        </div>
+
+        <span class="step-label">Trace · in your code</span>
+        <p>Find the two settings that make Run B different from Run A. Write down their variable names and values.</p>
+        <p>training-set size: <span class="write" style="display:inline-block;width:220px"></span> number of epochs: <span class="write" style="display:inline-block;width:160px"></span></p>
+        <p>Find the loop that trains the model one epoch at a time and records the losses. Which line records the training loss, and which records the validation loss?</p>
+        <span class="write"></span>
+
+        <span class="step-label">Compare</span>
+        <p>How did your sketch compare with the real plot? At which epoch would you stop Run B, and why?</p>
+        <span class="write tall"></span>
+
+        <span class="step-label">Tweak</span>
+        <p>Give Run B ten times more training examples. Predict the new curves, then run. Did the gap between the two curves grow or shrink?</p>
+        <span class="write"></span>
+
+        <span class="step-label">Explain</span>
+        <p>Finish this sentence using what your plot shows: <em>"Overfitting is when…"</em></p>
+        <span class="write tall"></span>
+      </section>
+
+      <!-- W5 -->
+      <section class="section" id="w5">
+        <div class="section-head"><div><p class="section-label"><span>Worksheet 05 · Q1.3</span></p><h2>A decision boundary, by hand</h2></div></div>
+        <p class="time">≈ 15 minutes</p>
+        <p>A classifier computes a <strong>score</strong> = (each feature × its weight, all added up) + bias. A positive score puts a point on one side of the boundary; a negative score puts it on the other. The boundary itself is wherever the score is exactly 0.</p>
+        <p>Suppose the quadratic model uses features <code>[x1, x2, x1², x1·x2, x2²]</code>, weights <code>[0, 0, −1, 0, −1]</code> and bias <code>0.45</code>. Most of the weights are 0, so the score simplifies to <code>0.45 − x1² − x2²</code>. (Your notebook may use different numbers; you can redo this table with yours.)</p>
+
+        <span class="step-label">Trace</span>
+        <div class="trace-wrap">
+        <table class="trace">
+          <thead><tr><th>point (x1, x2)</th><th>x1²</th><th>x2²</th><th>score = 0.45 − x1² − x2²</th><th>+ or −?</th></tr></thead>
+          <tbody>
+            <tr><td>A (0.2, 0.1)</td><td>0.04</td><td>0.01</td><td>0.40</td><td>+</td></tr>
+            <tr><td>B (0.9, 0.3)</td><td class="fill"></td><td class="fill"></td><td class="fill"></td><td class="fill"></td></tr>
+            <tr><td>C (0.0, 0.7)</td><td class="fill"></td><td class="fill"></td><td class="fill"></td><td class="fill"></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>Now use the <strong>linear</strong> model, with features <code>[x1, x2]</code>, weights <code>[1, 0]</code> and bias <code>0</code>. What is its score for A, B and C? What shape is its boundary?</p>
+        <span class="write"></span>
+
+        <span class="step-label">Think</span>
+        <p>The quadratic boundary is where <code>x1² + x2² = 0.45</code>. That is a circle. What is its radius? Which bias would make a circle of radius 0.5?</p>
+        <span class="write"></span>
+        <p>Why can no straight line separate one ring of points from another ring around it?</p>
+        <span class="write"></span>
+
+        <span class="step-label">Tweak</span>
+        <p>In your notebook, change <code>BIAS_QUADRATIC</code>. Predict first: does the circle grow or shrink?</p>
+        <span class="write"></span>
+
+        <details class="check"><summary>Check your numbers</summary><div>
+          <p>B: 0.81, 0.09, score −0.45, so B is outside the circle. C: 0, 0.49, score −0.04, so C is just barely outside. Linear scores equal x1: 0.2, 0.9 and 0.0 (C sits exactly on the boundary), and the boundary is the straight vertical line x1 = 0. The circle's radius is √0.45 ≈ 0.67; bias 0.25 gives radius 0.5. A larger bias makes a larger circle.</p>
+        </div></details>
+      </section>
+
+      <!-- W6 -->
+      <section class="section orange" id="w6">
+        <div class="section-head"><div><p class="section-label"><span>Worksheet 06 · Bonus Q1.4</span></p><h2>One step of gradient descent</h2></div></div>
+        <p class="time">≈ 15 minutes · calculator welcome</p>
+        <p>The model predicts <code>w × x</code>. The data are x = [1, 2, 3] and y = [2, 4, 6], so the best w is 2. Start at w = 0 with a learning rate of 0.1.</p>
+        <pre class="code">errors   = w * x - y
+loss     = mean(errors²)
+gradient = 2 * mean(errors * x)
+new w    = w - learning_rate * gradient</pre>
+
+        <span class="step-label">Trace</span>
+        <div class="trace-wrap">
+        <table class="trace">
+          <thead><tr><th>step</th><th>w</th><th>predictions w·x</th><th>errors</th><th>loss</th><th>errors·x</th><th>gradient</th><th>new w</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>0</td><td>0, 0, 0</td><td>−2, −4, −6</td><td class="fill"></td><td class="fill"></td><td class="fill"></td><td class="fill"></td></tr>
+            <tr><td>1</td><td class="fill"></td><td class="fill"></td><td class="fill"></td><td class="fill"></td><td class="fill"></td><td class="fill"></td><td class="fill"></td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <span class="step-label">Think</span>
+        <p>The first gradient is negative. Why does that make w go <em>up</em>?</p>
+        <span class="write"></span>
+        <p>Redo step 0 with a learning rate of 0.25. Is the new w closer to 2 or farther away than 0 was? What do you think happens if you keep going?</p>
+        <span class="write"></span>
+
+        <span class="step-label">Check in code</span>
+        <p>Section 10 of the warm-up notebook runs this exact loop. Compare its printout with your table, then try learning rates of 0.2 and 0.25.</p>
+
+        <details class="check"><summary>Check your numbers</summary><div>
+          <p>Step 0: loss 18.67; errors·x = −2, −8, −18; gradient −18.67; new w ≈ 1.87. Step 1: predictions 1.87, 3.73, 5.60; errors ≈ −0.13, −0.27, −0.40; loss ≈ 0.08; gradient ≈ −1.24; new w ≈ 1.99. With a learning rate of 0.25, the new w is 4.67, which is 2.67 away from 2 (it started 2 away). Each step overshoots by more, so w bounces farther away every time.</p>
+        </div></details>
+      </section>
+
+      <!-- W7 -->
+      <section class="section blue" id="w7">
+        <div class="section-head"><div><p class="section-label"><span>Worksheet 07 · Part 2</span></p><h2>Reading dense textbook code</h2></div></div>
+        <p class="time">≈ 15 minutes</p>
+        <p>Chapter 4 packs a lot into each line. Two habits make it readable: <strong>unchain</strong> a line into one step per line, and <strong>rewrite</strong> library calls as plain loops. Practice both here on lines that HW3 does not grade, then use them on the Q2 questions.</p>
+
+        <span class="step-label">Unchain</span>
+        <p>Early in the chapter, the book compares one image of a 3 with the "average 3":</p>
+        <pre class="code">dist_3_abs = (a_3 - mean3).abs().mean()
+dist_3_sqr = ((a_3 - mean3)**2).mean().sqrt()</pre>
+        <p>Pretend each image has only three pixels: <code>a_3 = [0, 0.5, 1]</code> and <code>mean3 = [0.2, 0.5, 0.6]</code>. Fill in one row per step.</p>
+        <div class="trace-wrap">
+        <table class="trace">
+          <thead><tr><th>step</th><th>code</th><th>what it does</th><th>result</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>a_3 - mean3</td><td class="fill"></td><td class="fill"></td></tr>
+            <tr><td>2a</td><td>.abs()</td><td class="fill"></td><td class="fill"></td></tr>
+            <tr><td>3a</td><td>.mean()</td><td class="fill"></td><td class="fill"></td></tr>
+            <tr><td>2b</td><td>**2</td><td class="fill"></td><td class="fill"></td></tr>
+            <tr><td>3b</td><td>.mean()</td><td class="fill"></td><td class="fill"></td></tr>
+            <tr><td>4b</td><td>.sqrt()</td><td class="fill"></td><td class="fill"></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>You have seen the second line before, under a different name. Which worksheet was it in?</p>
+        <span class="write"></span>
+
+        <span class="step-label">Rewrite as a loop</span>
+        <p>Chapter 4 often uses <code>torch.where(condition, a, b)</code>. Item by item, it means "if the condition holds, take <code>a</code>; otherwise take <code>b</code>". Here is a practice line (not from the book) and its plain-Python version:</p>
+        <pre class="code">labels = torch.where(temps &gt; 20, 1, 0)
+
+# plain Python
+labels = []
+for t in temps:
+    if t &gt; 20:
+        labels.append(1)
+    else:
+        labels.append(0)</pre>
+        <p>Now write the plain-Python version of <code>(temps &gt; 20).float().mean()</code>. What does the result tell you about <code>temps</code>?</p>
+        <span class="write tall"></span>
+
+        <span class="step-label">Connect</span>
+        <p>Chapter 4 lists seven steps for training a model (initialize, predict, loss, gradient, step, repeat, stop). Which lines of the Worksheet 06 loop match each step?</p>
+        <span class="write tall"></span>
+
+        <details class="check"><summary>Check your numbers</summary><div>
+          <p>1: [−0.2, 0, 0.4]. 2a: [0.2, 0, 0.4]. 3a: 0.2, the mean absolute difference. 2b: [0.04, 0, 0.16]. 3b: ≈ 0.067. 4b: ≈ 0.26. The second line is RMSE from Worksheet 02, used here to measure how different two images are.</p>
+        </div></details>
+      </section>
+
+      <!-- AI moves -->
+      <section class="section pink" id="ai">
+        <div class="section-head"><div><p class="section-label"><span>Any question</span></p><h2>Using AI beyond "write it for me"</h2></div></div>
+        <p>The AI that wrote your code can also help you understand it. Paste your cell and try one of these prompts:</p>
+        <ul class="ai-moves">
+          <li><b>Predict with me</b>"Explain this cell line by line for a beginner. After each line, ask me to predict what it does before you tell me."</li>
+          <li><b>Quiz me</b>"Ask me three short questions about this code. Wait for my answers before giving yours."</li>
+          <li><b>Show every step</b>"Rewrite this without numpy or sklearn, as plain Python loops, so I can see every step."</li>
+          <li><b>What matters</b>"Which single line matters most here? What would happen if I deleted it? Let me guess first."</li>
+          <li><b>Find the bug</b>"Put one small bug in this code and let me find it."</li>
+          <li><b>Tiny numbers</b>"Run this idea on a dataset of 4 rows so I can check every number by hand."</li>
+        </ul>
+        <div class="big-idea"><strong>The explain-back test</strong>Close the chat. Write two sentences about what your cell does. Then paste them back and ask, "What did I get wrong or leave out?" If you can explain it without the chat open, you understand it.</div>
+        <p style="margin-top:22px">Next week, HW4 asks you to add comments to a code file, trace a tiny model by hand, and write a prompt that describes code. Those are the same moves you practiced here.</p>
+      </section>
+
+      <footer>CPSC 1710 · Fall 2026 · Optional companion to Homework 3 · Materials by Xiuye Chen, developed with AI assistance · CC BY 4.0</footer>
+    </main>
+  </div>
+</body>
+</html>

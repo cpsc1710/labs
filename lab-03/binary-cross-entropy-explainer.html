@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="A gentle comparison of fast.ai Chapter 4's MNIST loss and binary cross-entropy for classifying 3s and 7s.">
+  <meta name="theme-color" content="#111318">
+  <title>What Should Confidence Cost? · Binary Cross-Entropy</title>
+  <style>
+    :root{--ink:#111318;--paper:#f5f1e8;--card:#fffdf7;--lime:#dfff57;--orange:#ff7043;--blue:#5271ff;--pink:#ef5da8;--cyan:#5edbd3;--muted:#62645f;--line:#b9b7ae;--shadow:7px 7px 0 var(--ink)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}a{color:inherit}button,input{font:inherit}.shell{max-width:1100px;margin:auto;padding:22px 22px 64px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:2px solid var(--ink);padding-bottom:14px}.brand{font-weight:950;letter-spacing:-.04em}.topbar nav{display:flex;gap:8px;flex-wrap:wrap}.chip{border:1px solid var(--ink);background:#fff;padding:6px 9px;text-decoration:none;font:800 .7rem ui-monospace,monospace}.chip:hover,.chip:focus-visible{background:var(--lime)}
+    .hero{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:42px;align-items:end;padding:56px 0 38px}.kicker{font:850 .74rem ui-monospace,monospace;text-transform:uppercase;letter-spacing:.09em;margin:0 0 13px}.kicker span{background:var(--cyan);border:1px solid var(--ink);padding:4px 7px}h1,h2,h3,p{margin-top:0}h1{font-size:clamp(3rem,7vw,6rem);line-height:.88;letter-spacing:-.07em;margin-bottom:22px}.lede{font-size:1.14rem;line-height:1.6;max-width:720px;color:#383a37;margin:0}.chapter-box{border:2px solid var(--ink);background:#fff;box-shadow:var(--shadow);padding:18px}.chapter-box b{display:block;margin-bottom:9px}.chapter-box p{font-size:.86rem;margin:0;color:#454742}
+    .route{display:flex;gap:9px;align-items:center;flex-wrap:wrap;background:var(--ink);color:#fff;padding:16px 18px;margin-bottom:42px;font:800 .72rem ui-monospace,monospace}.route i{font-style:normal;color:var(--cyan)}.route span{border:1px solid #fff;padding:4px 7px}.section{padding:38px 0;border-top:2px solid var(--ink)}.section-head{display:grid;grid-template-columns:85px 1fr;gap:18px;align-items:start;margin-bottom:22px}.step{width:64px;height:64px;display:grid;place-items:center;border:2px solid var(--ink);background:var(--accent,var(--cyan));font:950 1rem ui-monospace,monospace}.section h2{font-size:clamp(2rem,4vw,3.3rem);line-height:1;letter-spacing:-.055em;margin-bottom:8px}.section-intro{max-width:780px;color:#494b46;margin:0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.card{border:2px solid var(--ink);background:var(--card);padding:21px;box-shadow:4px 4px 0 var(--ink)}.card h3{font-size:1.25rem;letter-spacing:-.025em;margin-bottom:8px}.card p:last-child{margin-bottom:0}.equation{border:2px solid var(--ink);background:#fff;padding:18px;margin:18px 0;font:800 clamp(.88rem,2.2vw,1.18rem)/1.65 ui-monospace,monospace;overflow:auto}.case{display:grid;grid-template-columns:120px 1fr;gap:10px 18px;align-items:center}.case span:first-child{font-weight:900;background:var(--lime);padding:6px 8px}.note{border-left:8px solid var(--blue);background:#eef1ff;padding:16px 18px;margin:20px 0}.warning{border-left-color:var(--orange);background:#fff0e9}.refresher{margin:20px 0;border:2px solid var(--ink);background:#fff}.refresher summary{cursor:pointer;padding:14px 17px;background:#e9ff9a;font-weight:900;list-style-position:inside}.refresher summary:hover,.refresher summary:focus-visible{background:var(--lime)}.refresher-body{padding:18px}.refresher-body canvas{margin-top:14px}.word-parts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.word-part{border:1px solid var(--ink);padding:11px;background:#faf8f1}.word-part b{display:block;font:900 .9rem ui-monospace,monospace;margin-bottom:4px}.word-part span{font-size:.82rem;color:#4c4e49}
+    .lab{border:2px solid var(--ink);background:#fff;padding:22px;box-shadow:var(--shadow)}.target-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.target-buttons button{border:2px solid var(--ink);background:#fff;padding:9px 13px;font-weight:900;cursor:pointer}.target-buttons button[aria-pressed=true]{background:var(--lime);box-shadow:3px 3px 0 var(--ink)}.controls{display:grid;grid-template-columns:1fr 140px;gap:16px;align-items:end;margin-bottom:18px}.controls label{font-weight:900}.controls small{display:block;color:var(--muted);font-weight:500}.controls input[type=range]{width:100%;accent-color:var(--blue)}.readout{border:2px solid var(--ink);background:var(--cyan);padding:10px;text-align:center;font:900 1.15rem ui-monospace,monospace}canvas{display:block;width:100%;height:auto;border:1px solid var(--line);background:#fff}.live-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.stat{border:1px solid var(--ink);padding:10px;background:#faf8f1}.stat b{display:block;font:900 1.15rem ui-monospace,monospace}.stat span{font-size:.75rem;color:var(--muted)}
+    .examples{width:100%;border-collapse:collapse;background:#fff}.examples th,.examples td{border:1px solid var(--ink);padding:11px;text-align:right}.examples th:first-child,.examples td:first-child{text-align:left}.examples th{background:var(--ink);color:#fff}.examples tr.highlight td{background:#fff1c4;font-weight:800}pre{margin:16px 0 0;background:#17191f;color:#f8f3e7;border:2px solid var(--ink);padding:18px;overflow:auto;font:500 .82rem/1.55 ui-monospace,SFMono-Regular,Menlo,monospace}.code-key{color:var(--lime)}.code-new{color:#74e8df}.comparison{width:100%;border-collapse:collapse;background:#fff}.comparison th,.comparison td{border:1px solid var(--ink);padding:12px;text-align:left;vertical-align:top}.comparison th{background:var(--ink);color:#fff}.prompt{border:3px solid var(--ink);background:var(--cyan);padding:24px;box-shadow:var(--shadow)}.prompt h3{font-size:1.5rem}.prompt ol{margin-bottom:0;padding-left:22px}.footer{margin-top:40px;border-top:2px solid var(--ink);padding-top:15px;color:var(--muted);font:.74rem ui-monospace,monospace;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    @media(max-width:760px){.shell{padding:15px 13px 42px}.hero{grid-template-columns:1fr;padding-top:38px}.chapter-box{max-width:470px}.grid{grid-template-columns:1fr}.section-head{grid-template-columns:62px 1fr}.step{width:50px;height:50px}.controls{grid-template-columns:1fr}.live-summary{grid-template-columns:1fr}.comparison,.examples{font-size:.82rem}.topbar{align-items:flex-start}.case{grid-template-columns:1fr}.word-parts{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">CPSC 1710 · HW3 STRETCH</div>
+      <nav aria-label="Explainer navigation"><a class="chip" href="regularization-explainer.html">← Regularization</a></nav>
+    </header>
+
+    <section class="hero">
+      <div>
+        <p class="kicker"><span>Start with the loss you already know</span></p>
+        <h1>What should<br>confidence cost?</h1>
+        <p class="lede">Chapter 4 gives a sensible loss for separating 3s from 7s. Binary cross-entropy asks the same basic question—how much probability did the model give the correct answer?—but prices confident mistakes much more heavily.</p>
+      </div>
+      <aside class="chapter-box"><b>No new model is required.</b><p>Keep `linear1`, sigmoid, targets 0 and 1, mini-batches, `backward()`, and SGD. We are comparing two ways to turn the same prediction into a loss.</p></aside>
+    </section>
+
+    <div class="route" aria-label="Conceptual route"><span>raw score</span><i>→</i><span>sigmoid</span><i>→</i><span>probability p</span><i>→</i><span>loss</span><i>→</i><span>gradient</span></div>
+
+    <section class="section" style="--accent:var(--cyan)">
+      <div class="section-head"><div class="step">01</div><div><h2>Recover Chapter 4’s meaning.</h2><p class="section-intro">Let `p` mean “the model’s probability that this image is a 3.” The target is 1 for a 3 and 0 for a 7.</p></div></div>
+      <div class="grid">
+        <article class="card"><h3>If the image is a 3</h3><p>The target is 1. We want `p` close to 1. Chapter 4 uses the distance from 1:</p><div class="equation">loss = 1 - p</div></article>
+        <article class="card"><h3>If the image is a 7</h3><p>The target is 0. We want `p` close to 0. Chapter 4 uses the distance from 0:</p><div class="equation">loss = p</div></article>
+      </div>
+      <pre><code>def mnist_loss(predictions, targets):
+    probabilities = predictions.sigmoid()
+    return torch.where(
+        targets == 1,
+        <span class="code-key">1 - probabilities</span>,  # image is a 3
+        <span class="code-key">probabilities</span>       # image is a 7
+    ).mean()</code></pre>
+      <p style="margin-top:18px">A compact way to say the same thing is: <strong>Chapter 4 loss = 1 minus the probability given to the correct class.</strong></p>
+    </section>
+
+    <section class="section" style="--accent:var(--orange)">
+      <div class="section-head"><div class="step">02</div><div><h2>Keep the question; change the scale.</h2><p class="section-intro">Binary cross-entropy first finds the probability assigned to the correct answer. Then it applies `-log`.</p></div></div>
+      <div class="case"><span>target = 1</span><div class="equation">correct probability = p &nbsp;&nbsp;→&nbsp;&nbsp; BCE = -log(p)</div><span>target = 0</span><div class="equation">correct probability = 1 - p &nbsp;&nbsp;→&nbsp;&nbsp; BCE = -log(1 - p)</div></div>
+      <div class="note"><strong>A gentle reading of `-log`:</strong> giving the correct answer probability 1 costs 0. Giving it less probability costs more. As the correct-answer probability approaches 0, the cost grows sharply.</div>
+      <p><strong>Why is it called binary cross-entropy?</strong> For one outcome, <code>-log(p)</code> is its information or “surprise.” Entropy is not merely one `-log`; it is an average of surprise under a probability distribution. <em>Cross</em>-entropy averages the surprise produced by one distribution’s predictions when the true outcomes come from another distribution. In our binary 3-versus-7 case, that becomes the average BCE across examples.</p>
+      <div class="word-parts" aria-label="Meaning of the words binary cross entropy">
+        <div class="word-part"><b>BINARY</b><span>There are two possible labels: 3 or 7, represented by 1 or 0.</span></div>
+        <div class="word-part"><b>CROSS</b><span>We compare the true label with the probability distribution predicted by the model.</span></div>
+        <div class="word-part"><b>ENTROPY</b><span>We average a <code>-log(probability)</code> surprise for what actually happened.</span></div>
+      </div>
+      <details class="refresher">
+        <summary>Folded refresher: what do log(p) and -log(p) look like?</summary>
+        <div class="refresher-body">
+          <p>For probabilities between 0 and 1, <code>log(p)</code> is zero or negative. Multiplying by -1 flips the curve upward, giving a nonnegative loss. Near probability 1, the loss is near 0. Near probability 0, the loss becomes very large.</p>
+          <canvas id="logPlot" width="900" height="360" aria-label="Plot comparing log p and negative log p for probabilities between zero and one"></canvas>
+        </div>
+      </details>
+      <table class="examples" aria-label="Loss examples for different correct-answer probabilities">
+        <thead><tr><th>Probability given to the correct answer</th><th>Chapter 4 loss<br>1 − correct probability</th><th>Binary cross-entropy<br>−log(correct probability)</th></tr></thead>
+        <tbody>
+          <tr><td>0.99</td><td>0.01</td><td>0.01</td></tr>
+          <tr><td>0.90</td><td>0.10</td><td>0.11</td></tr>
+          <tr><td>0.60</td><td>0.40</td><td>0.51</td></tr>
+          <tr><td>0.50</td><td>0.50</td><td>0.69</td></tr>
+          <tr class="highlight"><td>0.10</td><td>0.90</td><td>2.30</td></tr>
+          <tr class="highlight"><td>0.01</td><td>0.99</td><td>4.61</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:18px">The two losses agree about which direction is better. They disagree about <em>how serious</em> a confident mistake should be.</p>
+    </section>
+
+    <section class="section" style="--accent:#9bb0ff">
+      <div class="section-head"><div class="step">03</div><div><h2>Move one prediction.</h2><p class="section-intro">Choose the true label, then move the model’s probability that the image is a 3. The vertical marker shows the current prediction.</p></div></div>
+      <div class="lab">
+        <div class="target-buttons" role="group" aria-label="True label">
+          <button type="button" data-target="1" aria-pressed="true">True label: 3 (target 1)</button>
+          <button type="button" data-target="0" aria-pressed="false">True label: 7 (target 0)</button>
+        </div>
+        <div class="controls">
+          <label for="probability">Model probability that the image is a 3: <output id="probabilityText">0.80</output><small>Above 0.5 predicts 3; below 0.5 predicts 7.</small></label>
+          <div class="readout" id="verdict">correct side</div>
+        </div>
+        <input id="probability" type="range" min="1" max="99" step="1" value="80" aria-label="Probability that the image is a 3">
+        <canvas id="lossPlot" width="960" height="470" aria-label="Comparison of Chapter 4 loss and binary cross-entropy across probabilities"></canvas>
+        <div class="live-summary">
+          <div class="stat"><b id="correctProbability">0.80</b><span>probability given to correct answer</span></div>
+          <div class="stat"><b id="chapterLoss">0.20</b><span>Chapter 4 loss</span></div>
+          <div class="stat"><b id="bceLoss">0.22</b><span>binary cross-entropy</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="--accent:var(--pink)">
+      <div class="section-head"><div class="step">04</div><div><h2>Write BCE in Chapter 4 style.</h2><p class="section-intro">The long form shows both cases. The PyTorch helper is the safer implementation.</p></div></div>
+      <pre><code>def binary_cross_entropy_from_probabilities(probabilities, targets):
+    losses = -(
+        targets * torch.log(probabilities)
+        + (1 - targets) * torch.log(1 - probabilities)
+    )
+    return losses.mean()</code></pre>
+      <div class="note warning"><strong>One practical problem:</strong> `log(0)` is not a usable finite number. Directly taking logs of rounded probabilities can therefore cause numerical trouble.</div>
+      <p>Chapter 4’s `linear1(xb)` returns raw scores before sigmoid. PyTorch calls these <strong>logits</strong>. Its <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.binary_cross_entropy_with_logits.html" target="_blank" rel="noopener">combined BCE-with-logits function</a> accepts those raw scores, applies the sigmoid idea internally, and calculates BCE in a numerically stable way:</p>
+      <pre><code>import torch.nn.functional as F
+
+def bce_loss(logits, targets):
+    return F.<span class="code-new">binary_cross_entropy_with_logits</span>(
+        logits, targets.float()
+    )
+
+predictions = linear1(xb)   # raw scores: do not call sigmoid first
+loss = bce_loss(predictions, yb)</code></pre>
+      <div class="note"><strong>Rule to remember:</strong> “with logits” means the function expects raw model scores. Do not apply sigmoid first. Apply sigmoid later when you want probabilities for interpretation or a 0.5 decision threshold.</div>
+    </section>
+
+    <section class="section" style="--accent:var(--lime)">
+      <div class="section-head"><div class="step">05</div><div><h2>Compare without declaring a winner.</h2><p class="section-intro">Both losses are smooth after sigmoid, both reward probability on the correct answer, and both can drive SGD. They create different gradient signals.</p></div></div>
+      <table class="comparison">
+        <thead><tr><th>Question</th><th>Chapter 4 `mnist_loss`</th><th>Binary cross-entropy</th></tr></thead>
+        <tbody>
+          <tr><td>Smallest possible item loss</td><td>0</td><td>0</td></tr>
+          <tr><td>Largest possible item loss</td><td>Approaches 1</td><td>Grows without a fixed upper limit</td></tr>
+          <tr><td>Confident wrong prediction</td><td>Costs almost 1</td><td>Costs much more than an uncertain mistake</td></tr>
+          <tr><td>Main classroom advantage</td><td>Its two cases are immediately readable</td><td>It strongly distinguishes “slightly wrong” from “confidently wrong”</td></tr>
+          <tr><td>PyTorch input</td><td>Custom function shown in the chapter</td><td>Raw logits with `binary_cross_entropy_with_logits`</td></tr>
+        </tbody>
+      </table>
+      <div class="note warning"><strong>Binary is important here.</strong> This page concerns one yes/no decision: 3 versus 7. The `F.cross_entropy` used near the end of the Chapter 4 notebook for ten digit classes is related, but it handles a different output shape and target format. Do not swap the functions by name alone.</div>
+    </section>
+
+    <section class="section">
+      <div class="prompt">
+        <h3>Stretch question: inspect the loss</h3>
+        <p>Use the same 3-versus-7 data, model, split, learning rate, and number of epochs. Compare Chapter 4’s `mnist_loss` with binary cross-entropy from logits.</p>
+        <ol>
+          <li>Before training, calculate both losses for several hand-chosen probabilities, including a confident correct and confident wrong prediction.</li>
+          <li>Train once with each loss from the same starting seed.</li>
+          <li>Plot training loss and validation accuracy. Remember that the loss scales are different, so compare patterns—not raw loss heights.</li>
+          <li>Find one example each model gets wrong. Record its predicted probability and both loss values.</li>
+          <li>Explain, in plain language, what BCE changes about the cost of confidence.</li>
+        </ol>
+      </div>
+    </section>
+
+    <footer class="footer"><span>Drafted by Codex (OpenAI), based on the direction of Xiuye Chen.</span><span>Self-contained HTML · no tracking · works offline</span></footer>
+  </main>
+  <script>
+    const slider=document.querySelector('#probability');
+    const canvas=document.querySelector('#lossPlot');
+    const ctx=canvas.getContext('2d');
+    const probabilityText=document.querySelector('#probabilityText');
+    const correctProbability=document.querySelector('#correctProbability');
+    const chapterLoss=document.querySelector('#chapterLoss');
+    const bceLoss=document.querySelector('#bceLoss');
+    const verdict=document.querySelector('#verdict');
+    const buttons=[...document.querySelectorAll('[data-target]')];
+    const refresher=document.querySelector('.refresher');
+    const logCanvas=document.querySelector('#logPlot');
+    let target=1;
+    const correctP=(p,y)=>y===1?p:1-p;
+    const simpleLoss=(p,y)=>1-correctP(p,y);
+    const bce=(p,y)=>-Math.log(correctP(p,y));
+    function draw(){
+      const p=Number(slider.value)/100,dpr=window.devicePixelRatio||1;
+      const cssWidth=canvas.clientWidth,cssHeight=Math.max(340,cssWidth*.49);
+      canvas.width=Math.round(cssWidth*dpr);canvas.height=Math.round(cssHeight*dpr);canvas.style.height=cssHeight+'px';ctx.setTransform(dpr,0,0,dpr,0,0);
+      const W=cssWidth,H=cssHeight,m={l:58,r:20,t:24,b:50},pw=W-m.l-m.r,ph=H-m.t-m.b;
+      const x=v=>m.l+v*pw,y=v=>m.t+ph-Math.min(5,v)/5*ph;
+      ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);ctx.font='12px ui-monospace, monospace';ctx.fillStyle='#555';ctx.strokeStyle='#ddd9cf';ctx.lineWidth=1;
+      for(let i=0;i<=5;i++){const yy=y(i);ctx.beginPath();ctx.moveTo(m.l,yy);ctx.lineTo(W-m.r,yy);ctx.stroke();ctx.fillText(String(i),28,yy+4)}
+      for(let i=0;i<=10;i+=2){const v=i/10,xx=x(v);ctx.beginPath();ctx.moveTo(xx,m.t);ctx.lineTo(xx,H-m.b);ctx.stroke();ctx.fillText(v.toFixed(1),xx-10,H-22)}
+      ctx.strokeStyle='#111318';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(m.l,m.t);ctx.lineTo(m.l,H-m.b);ctx.lineTo(W-m.r,H-m.b);ctx.stroke();ctx.fillStyle='#111318';ctx.fillText('probability that image is a 3',W/2-100,H-6);ctx.save();ctx.translate(13,H/2+30);ctx.rotate(-Math.PI/2);ctx.fillText('item loss',0,0);ctx.restore();
+      function curve(fn,color){ctx.beginPath();for(let i=1;i<100;i++){const q=i/100,px=x(q),py=y(fn(q,target));i===1?ctx.moveTo(px,py):ctx.lineTo(px,py)}ctx.strokeStyle=color;ctx.lineWidth=3;ctx.stroke()}
+      curve(simpleLoss,'#5271ff');curve(bce,'#ff7043');
+      ctx.fillStyle='#5271ff';ctx.fillRect(m.l+12,m.t+10,18,4);ctx.fillStyle='#111318';ctx.fillText('Chapter 4 loss',m.l+37,m.t+15);ctx.fillStyle='#ff7043';ctx.fillRect(m.l+175,m.t+10,18,4);ctx.fillStyle='#111318';ctx.fillText('binary cross-entropy',m.l+200,m.t+15);
+      ctx.strokeStyle='#111318';ctx.setLineDash([5,5]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x(p),m.t);ctx.lineTo(x(p),H-m.b);ctx.stroke();ctx.setLineDash([]);
+      [[simpleLoss(p,target),'#5271ff'],[bce(p,target),'#ff7043']].forEach(([loss,color])=>{ctx.fillStyle=color;ctx.beginPath();ctx.arc(x(p),y(loss),6,0,Math.PI*2);ctx.fill()});
+      const cp=correctP(p,target),predicted=p>=.5?1:0;
+      probabilityText.textContent=p.toFixed(2);correctProbability.textContent=cp.toFixed(2);chapterLoss.textContent=simpleLoss(p,target).toFixed(2);bceLoss.textContent=bce(p,target).toFixed(2);verdict.textContent=predicted===target?'correct side':'wrong side';verdict.style.background=predicted===target?'#dfff57':'#ffad8d';
+    }
+    function drawLogPlot(){
+      if(!refresher.open)return;
+      const logCtx=logCanvas.getContext('2d'),dpr=window.devicePixelRatio||1;
+      const W=logCanvas.clientWidth,H=Math.max(260,W*.36),m={l:58,r:20,t:24,b:48},pw=W-m.l-m.r,ph=H-m.t-m.b;
+      logCanvas.width=Math.round(W*dpr);logCanvas.height=Math.round(H*dpr);logCanvas.style.height=H+'px';logCtx.setTransform(dpr,0,0,dpr,0,0);
+      const x=p=>m.l+p*pw,y=v=>m.t+(5-v)/10*ph;
+      logCtx.clearRect(0,0,W,H);logCtx.fillStyle='#fff';logCtx.fillRect(0,0,W,H);logCtx.font='12px ui-monospace, monospace';logCtx.strokeStyle='#ddd9cf';logCtx.fillStyle='#555';
+      for(let value=-5;value<=5;value++){const yy=y(value);logCtx.beginPath();logCtx.moveTo(m.l,yy);logCtx.lineTo(W-m.r,yy);logCtx.stroke();logCtx.fillText(String(value),25,yy+4)}
+      for(let i=0;i<=10;i+=2){const p=i/10,xx=x(p);logCtx.beginPath();logCtx.moveTo(xx,m.t);logCtx.lineTo(xx,H-m.b);logCtx.stroke();logCtx.fillText(p.toFixed(1),xx-10,H-21)}
+      logCtx.strokeStyle='#111318';logCtx.lineWidth=2;logCtx.beginPath();logCtx.moveTo(m.l,m.t);logCtx.lineTo(m.l,H-m.b);logCtx.moveTo(m.l,y(0));logCtx.lineTo(W-m.r,y(0));logCtx.stroke();logCtx.fillStyle='#111318';logCtx.fillText('probability p',W/2-45,H-6);
+      function curve(sign,color){logCtx.beginPath();for(let i=1;i<=100;i++){const p=i/100,value=Math.max(-5,Math.min(5,sign*Math.log(p))),px=x(p),py=y(value);i===1?logCtx.moveTo(px,py):logCtx.lineTo(px,py)}logCtx.strokeStyle=color;logCtx.lineWidth=3;logCtx.stroke()}
+      curve(1,'#5271ff');curve(-1,'#ff7043');
+      logCtx.fillStyle='#5271ff';logCtx.fillRect(m.l+12,m.t+10,18,4);logCtx.fillStyle='#111318';logCtx.fillText('log(p)',m.l+37,m.t+15);logCtx.fillStyle='#ff7043';logCtx.fillRect(m.l+115,m.t+10,18,4);logCtx.fillStyle='#111318';logCtx.fillText('-log(p)',m.l+140,m.t+15);
+    }
+    buttons.forEach(button=>button.addEventListener('click',()=>{target=Number(button.dataset.target);buttons.forEach(b=>b.setAttribute('aria-pressed',String(b===button)));draw()}));
+    refresher.addEventListener('toggle',drawLogPlot);slider.addEventListener('input',draw);window.addEventListener('resize',()=>{draw();drawLogPlot()});draw();
+  </script>
+</body>
+</html>

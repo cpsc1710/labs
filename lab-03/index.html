@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Lab 3 materials for CPSC 1710: MNIST homework, optional companion worksheets, a Python warm-up notebook, and bonus explainers.">
+  <meta name="theme-color" content="#101114">
+  <title>Lab 3 · MNIST and Understanding Your Code</title>
+  <link rel="stylesheet" href="../assets/labs.css">
+</head>
+<body>
+  <nav class="sitebar"><a href="../index.html">← CPSC 1710 Labs</a></nav>
+  <main class="shell">
+    <header class="hero">
+      <p class="kicker" style="--accent:var(--blue)"><span>Lab 03 · Homework 03</span></p>
+      <h1>MNIST, and what the code is doing.</h1>
+      <p class="lede">AI can write the HW3 code quickly. The optional materials here help you read it: predict what a cell will do, check the numbers by hand, change one thing, and explain the result in your own words.</p>
+    </header>
+
+    <section class="cards" aria-label="Lab 3 materials">
+      <div class="card featured">
+        <span class="tag">Start here</span>
+        <h2>Homework 3 assignment</h2>
+        <p>Linear regression, overfitting, decision boundaries, and a guided walk through fast.ai Chapter 4.</p>
+        <span class="go">Find the handout on Canvas</span>
+      </div>
+      <a class="card orange" href="hw-03-companion.html">
+        <span class="tag">Optional · printable</span>
+        <h2>Companion worksheets</h2>
+        <p>Seven short worksheets, one for each HW3 question. Predict, trace by hand, tweak, and explain what your generated code does.</p>
+        <span class="go">Open the worksheets →</span>
+      </a>
+      <a class="card blue" href="https://colab.research.google.com/github/xiuyechen/cpsc1710-labs/blob/main/lab-03/hw3-python-warmup.ipynb">
+        <span class="tag">Optional · notebook</span>
+        <h2>Python warm-up</h2>
+        <p>No coding background needed. Twelve short sections with self-checking exercises, from "what is a variable" to a five-step gradient descent loop.</p>
+        <span class="go">Open in Colab →</span>
+      </a>
+      <a class="card pink" href="regularization-explainer.html">
+        <span class="tag">Bonus reading</span>
+        <h2>A small cost for large weights</h2>
+        <p>Add an L2 penalty to the Chapter 4 loss, and see how it discourages overfitting.</p>
+        <span class="go">Read the explainer →</span>
+      </a>
+      <a class="card" href="binary-cross-entropy-explainer.html">
+        <span class="tag">Stretch reading</span>
+        <h2>Binary cross-entropy</h2>
+        <p>Compare the standard classification loss with Chapter 4's <code>mnist_loss</code>.</p>
+        <span class="go">Read the explainer →</span>
+      </a>
+    </section>
+
+    <section class="notice" aria-label="Ways to run a notebook" style="background:var(--white);margin-top:34px">
+      <strong>Where should I run a notebook?</strong>
+      <ul style="margin:10px 0 12px">
+        <li><strong>Colab in the browser</strong>: nothing to install. The best choice if you just want it to work.</li>
+        <li><strong>VS Code with a Colab server</strong>: the notebook stays in VS Code, next to your Git and Codex work, but runs on Google's servers. Install the <strong>Jupyter</strong> and <strong>Colab</strong> extensions, click <strong>Select Kernel → Colab → Auto Connect</strong>, and sign in with Google. See Google's <a href="https://github.com/googlecolab/colab-vscode/wiki/User-Guide">setup guide</a>.</li>
+        <li><strong>VS Code with Python on your computer</strong>: works offline, but you install Python and the packages in <a href="requirements.txt"><code>requirements.txt</code></a> yourself. Choose this once you're curious how Python environments work.</li>
+      </ul>
+      <p style="margin:0">To run the warm-up outside Colab, <a href="hw3-python-warmup.ipynb" download>download the notebook file</a>.</p>
+    </section>
+  </main>
+</body>
+</html>

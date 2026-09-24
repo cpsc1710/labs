@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="A gentle extension of fast.ai Chapter 4: add an L2 regularization term to the loss to discourage overfitting.">
+  <meta name="theme-color" content="#111318">
+  <title>A Small Cost for Large Weights · Regularization</title>
+  <style>
+    :root{--ink:#111318;--paper:#f5f1e8;--card:#fffdf7;--lime:#dfff57;--orange:#ff7043;--blue:#5271ff;--pink:#ef5da8;--muted:#62645f;--line:#b9b7ae;--shadow:7px 7px 0 var(--ink)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}a{color:inherit}button,input{font:inherit}.shell{max-width:1100px;margin:auto;padding:22px 22px 64px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:2px solid var(--ink);padding-bottom:14px}.brand{font-weight:950;letter-spacing:-.04em}.topbar nav{display:flex;gap:8px;flex-wrap:wrap}.chip{border:1px solid var(--ink);background:#fff;padding:6px 9px;text-decoration:none;font:800 .7rem ui-monospace,monospace}.chip:hover,.chip:focus-visible{background:var(--lime)}
+    .hero{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:42px;align-items:end;padding:56px 0 38px}.kicker{font:850 .74rem ui-monospace,monospace;text-transform:uppercase;letter-spacing:.09em;margin:0 0 13px}.kicker span{background:var(--lime);border:1px solid var(--ink);padding:4px 7px}h1,h2,h3,p{margin-top:0}h1{font-size:clamp(3rem,7vw,6rem);line-height:.88;letter-spacing:-.07em;margin-bottom:22px}.lede{font-size:1.14rem;line-height:1.6;max-width:710px;color:#383a37;margin:0}.chapter-box{border:2px solid var(--ink);background:#fff;box-shadow:var(--shadow);padding:18px}.chapter-box b{display:block;margin-bottom:9px}.chapter-box p{font-size:.86rem;margin:0;color:#454742}
+    .route{display:flex;gap:9px;align-items:center;flex-wrap:wrap;background:var(--ink);color:#fff;padding:16px 18px;margin-bottom:42px;font:800 .72rem ui-monospace,monospace}.route i{font-style:normal;color:var(--lime)}.route span{border:1px solid #fff;padding:4px 7px}.section{padding:38px 0;border-top:2px solid var(--ink)}.section-head{display:grid;grid-template-columns:85px 1fr;gap:18px;align-items:start;margin-bottom:22px}.step{width:64px;height:64px;display:grid;place-items:center;border:2px solid var(--ink);background:var(--accent,var(--lime));font:950 1rem ui-monospace,monospace}.section h2{font-size:clamp(2rem,4vw,3.3rem);line-height:1;letter-spacing:-.055em;margin-bottom:8px}.section-intro{max-width:760px;color:#494b46;margin:0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.card{border:2px solid var(--ink);background:var(--card);padding:21px;box-shadow:4px 4px 0 var(--ink)}.card h3{font-size:1.25rem;letter-spacing:-.025em;margin-bottom:8px}.card p:last-child{margin-bottom:0}.equation{display:grid;gap:9px;border:2px solid var(--ink);background:#fff;padding:18px;margin:20px 0;font:800 clamp(.9rem,2.3vw,1.25rem)/1.55 ui-monospace,monospace}.equation .plus{color:var(--orange)}.definition{display:grid;grid-template-columns:140px 1fr;gap:10px 18px;margin:0}.definition dt{font-weight:900}.definition dd{margin:0;color:#464842}
+    .lab{border:2px solid var(--ink);background:#fff;padding:22px;box-shadow:var(--shadow)}.controls{display:grid;grid-template-columns:1fr 120px;gap:16px;align-items:end;margin-bottom:18px}.controls label{font-weight:900}.controls small{display:block;color:var(--muted);font-weight:500}.controls input[type=range]{width:100%;accent-color:var(--blue)}.readout{border:2px solid var(--ink);background:var(--lime);padding:10px;text-align:center;font:900 1.15rem ui-monospace,monospace}canvas{display:block;width:100%;height:auto;border:1px solid var(--line);background:#fff}.live-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.stat{border:1px solid var(--ink);padding:10px;background:#faf8f1}.stat b{display:block;font:900 1.15rem ui-monospace,monospace}.stat span{font-size:.75rem;color:var(--muted)}
+    pre{margin:16px 0 0;background:#17191f;color:#f8f3e7;border:2px solid var(--ink);padding:18px;overflow:auto;font:500 .82rem/1.55 ui-monospace,SFMono-Regular,Menlo,monospace}.code-key{color:var(--lime)}.code-new{color:#ffad8d}.note{border-left:8px solid var(--blue);background:#eef1ff;padding:16px 18px;margin:20px 0}.warning{border-left-color:var(--orange);background:#fff0e9}.comparison{width:100%;border-collapse:collapse;background:#fff}.comparison th,.comparison td{border:1px solid var(--ink);padding:12px;text-align:left;vertical-align:top}.comparison th{background:var(--ink);color:#fff}.prompt{border:3px solid var(--ink);background:var(--lime);padding:24px;box-shadow:var(--shadow)}.prompt h3{font-size:1.5rem}.prompt ol{margin-bottom:0;padding-left:22px}.checklist{display:grid;gap:10px;padding:0;list-style:none}.checklist li{border:1px solid var(--ink);background:#fff;padding:11px 13px}.checklist li::before{content:"□";font-weight:900;margin-right:9px}.footer{margin-top:40px;border-top:2px solid var(--ink);padding-top:15px;color:var(--muted);font:.74rem ui-monospace,monospace;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    @media(max-width:760px){.shell{padding:15px 13px 42px}.hero{grid-template-columns:1fr;padding-top:38px}.chapter-box{max-width:470px}.grid{grid-template-columns:1fr}.section-head{grid-template-columns:62px 1fr}.step{width:50px;height:50px}.controls{grid-template-columns:1fr}.live-summary{grid-template-columns:1fr}.comparison{font-size:.86rem}.topbar{align-items:flex-start}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">CPSC 1710 · HW3 BONUS</div>
+      <nav aria-label="Explainer navigation"><a class="chip" href="binary-cross-entropy-explainer.html">Next: binary cross-entropy →</a></nav>
+    </header>
+
+    <section class="hero">
+      <div>
+        <p class="kicker"><span>One new idea, built on Chapter 4</span></p>
+        <h1>A small cost<br>for large weights.</h1>
+        <p class="lede">Early stopping asks <em>when should training end?</em> Regularization asks a different question: <em>while training, can we make extremely large weights a little less attractive?</em></p>
+      </div>
+      <aside class="chapter-box"><b>You already know the machinery.</b><p>Chapter 4 gives us predictions, a loss, gradients, parameters, a learning rate, and repeated updates. We will change only the number called <strong>loss</strong>.</p></aside>
+    </section>
+
+    <div class="route" aria-label="Conceptual route"><span>data loss</span><i>+</i><span>size penalty</span><i>=</i><span>training objective</span><i>→</i><span>gradients</span><i>→</i><span>updates</span></div>
+
+    <section class="section" style="--accent:var(--lime)">
+      <div class="section-head"><div class="step">01</div><div><h2>Start from the overfitting clue.</h2><p class="section-intro">In the HW3 experiment, training loss may keep falling after validation loss begins to rise. The model is getting better at its training examples without getting better at new examples.</p></div></div>
+      <div class="grid">
+        <article class="card"><h3>Early stopping</h3><p>Keep watching validation loss. Stop training—or restore an earlier model—when validation performance stops improving.</p><p><strong>It changes how long we train.</strong></p></article>
+        <article class="card"><h3>Regularization</h3><p>Add another preference to the training objective: fit the examples, but avoid using unnecessarily large weights.</p><p><strong>It changes what training tries to minimize.</strong></p></article>
+      </div>
+      <div class="note"><strong>Important:</strong> neither method guarantees better generalization. We use validation evidence to choose settings, then preserve the test set for the final check.</div>
+    </section>
+
+    <section class="section" style="--accent:var(--orange)">
+      <div class="section-head"><div class="step">02</div><div><h2>Add one term to the loss.</h2><p class="section-intro">Chapter 4 describes loss as a number we want to make small. A regularized training objective is still one number—it simply combines two concerns.</p></div></div>
+      <div class="equation"><span>total training loss</span><span>= data loss <span class="plus">+</span> strength × weight penalty</span></div>
+      <dl class="definition">
+        <dt>Data loss</dt><dd>How poorly the predictions match the labels in this mini-batch.</dd>
+        <dt>Penalty</dt><dd>A number that grows when weights grow. For L2 regularization, square the weights and add or average them.</dd>
+        <dt>Strength</dt><dd>A setting chosen before training. It controls how much the penalty matters. It is often written as λ (lambda).</dd>
+      </dl>
+      <div class="note warning"><strong>The penalty is part of training loss, not a new accuracy score.</strong> When reporting validation performance, keep reporting the original validation loss and metric so models are compared on the task itself.</div>
+    </section>
+
+    <section class="section" style="--accent:#9bb0ff">
+      <div class="section-head"><div class="step">03</div><div><h2>See the compromise.</h2><p class="section-intro">This toy model has just one weight. The data alone prefers weight = 4. Move the slider to make large weights increasingly expensive.</p></div></div>
+      <div class="lab">
+        <div class="controls">
+          <label for="strength">Regularization strength λ: <output id="strengthText">0.00</output><small>0 means no penalty. Larger values pull the preferred weight closer to zero.</small></label>
+          <div class="readout" id="optimumReadout">best w = 4.00</div>
+        </div>
+        <input id="strength" type="range" min="0" max="2" step="0.05" value="0" aria-label="Regularization strength">
+        <canvas id="lossPlot" width="960" height="460" aria-label="Plot of data loss, L2 penalty, and total loss across possible weight values"></canvas>
+        <div class="live-summary">
+          <div class="stat"><b id="dataValue">0.00</b><span>data loss at selected best weight</span></div>
+          <div class="stat"><b id="penaltyValue">0.00</b><span>weighted penalty at selected best weight</span></div>
+          <div class="stat"><b id="totalValue">0.00</b><span>total training loss</span></div>
+        </div>
+      </div>
+      <p style="margin-top:18px">Notice what regularization does <em>not</em> say: it does not claim that small weights are automatically correct. It says that, when two settings fit the training data similarly, we prefer the one that relies less on large weights.</p>
+    </section>
+
+    <section class="section" style="--accent:var(--pink)">
+      <div class="section-head"><div class="step">04</div><div><h2>Change the Chapter 4 loop.</h2><p class="section-intro">The forward pass stays the same. The loss gains one extra calculation before `backward()`.</p></div></div>
+      <pre aria-label="Regularized Chapter 4 training loop"><code>for xb, yb in dl:
+    predictions = model(xb)
+
+    <span class="code-key">data_loss</span> = mnist_loss(predictions, yb)
+    <span class="code-new">weight_penalty</span> = (weights ** 2).mean()
+    <span class="code-new">loss</span> = data_loss + strength * weight_penalty
+
+    loss.backward()
+    weights.data -= weights.grad * lr
+    bias.data   -= bias.grad * lr
+    weights.grad.zero_()
+    bias.grad.zero_()</code></pre>
+      <div class="grid" style="margin-top:20px">
+        <article class="card"><h3>What receives a gradient?</h3><p>The total loss depends on both the predictions and the weights. `backward()` therefore includes both influences when it calculates `weights.grad`.</p></article>
+        <article class="card"><h3>What about bias?</h3><p>For this first experiment, penalize the weights and leave the bias alone. That keeps the question focused. Larger systems may make different choices.</p></article>
+      </div>
+      <p>When using PyTorch’s SGD optimizer, the same idea is available as `weight_decay`:</p>
+      <pre><code>optimizer = torch.optim.SGD(model.parameters(), lr=lr, <span class="code-new">weight_decay=strength</span>)</code></pre>
+      <p style="font-size:.83rem;color:var(--muted)">For this Chapter 4 extension, writing the penalty explicitly makes the changed objective easier to inspect. <a href="https://docs.pytorch.org/docs/stable/generated/torch.optim.SGD.html" target="_blank" rel="noopener">PyTorch documents SGD’s <code>weight_decay</code> option</a> as an L2 penalty. The numerical value of `strength` need not match `weight_decay` exactly because a hand-written penalty may use a sum or a mean.</p>
+    </section>
+
+    <section class="section" style="--accent:var(--lime)">
+      <div class="section-head"><div class="step">05</div><div><h2>Run a fair experiment.</h2><p class="section-intro">A regularizer is useful only if held-out evidence improves. Keep everything else fixed.</p></div></div>
+      <ol class="checklist">
+        <li>Use the same training and validation split for every run.</li>
+        <li>Use the same model, starting seed, learning rate, batch size, and epoch count.</li>
+        <li>Try a small set of strengths, including 0 as the no-regularization baseline.</li>
+        <li>Plot training data loss and validation data loss. Do not add the penalty to validation loss.</li>
+        <li>Compare the size of the weights as supporting evidence—not as the final goal.</li>
+        <li>Choose from validation evidence; use the test set only after the choice is fixed.</li>
+      </ol>
+      <table class="comparison" style="margin-top:22px">
+        <thead><tr><th>Method</th><th>What changes?</th><th>Question it answers</th></tr></thead>
+        <tbody>
+          <tr><td>Early stopping</td><td>The epoch at which training ends</td><td>When did validation performance stop improving?</td></tr>
+          <tr><td>L2 regularization</td><td>The objective minimized during every update</td><td>Can a model fit reasonably well without relying on large weights?</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <div class="prompt">
+        <h3>Bonus question: another response to overfitting</h3>
+        <p>Starting from your overfitting run, add an L2 penalty to the training loss. Keep the data split, model, learning rate, and epoch count fixed.</p>
+        <ol>
+          <li>Run a baseline with strength = 0 and at least three positive strengths.</li>
+          <li>Plot training data loss and validation data loss for every run.</li>
+          <li>Report the best validation epoch and a simple summary of weight size for each run.</li>
+          <li>Explain which strength you would choose and what evidence supports that choice.</li>
+          <li>Compare this method with early stopping. What does each one change?</li>
+        </ol>
+      </div>
+    </section>
+
+    <footer class="footer"><span>Drafted by Codex (OpenAI), based on the direction of Xiuye Chen.</span><span>Self-contained HTML · no tracking · works offline</span></footer>
+  </main>
+  <script>
+    const slider=document.querySelector('#strength');
+    const canvas=document.querySelector('#lossPlot');
+    const ctx=canvas.getContext('2d');
+    const strengthText=document.querySelector('#strengthText');
+    const optimumReadout=document.querySelector('#optimumReadout');
+    const dataValue=document.querySelector('#dataValue');
+    const penaltyValue=document.querySelector('#penaltyValue');
+    const totalValue=document.querySelector('#totalValue');
+    const dataLoss=w=>(w-4)**2/8;
+    const penalty=(w,lambda)=>lambda*w*w/8;
+    const total=(w,lambda)=>dataLoss(w)+penalty(w,lambda);
+    function draw(){
+      const lambda=Number(slider.value), dpr=window.devicePixelRatio||1;
+      const cssWidth=canvas.clientWidth, cssHeight=Math.max(330,cssWidth*.48);
+      canvas.width=Math.round(cssWidth*dpr);canvas.height=Math.round(cssHeight*dpr);canvas.style.height=cssHeight+'px';ctx.setTransform(dpr,0,0,dpr,0,0);
+      const W=cssWidth,H=cssHeight,m={l:58,r:20,t:24,b:48},pw=W-m.l-m.r,ph=H-m.t-m.b;
+      const xmin=-1,xmax=6,ymin=0,ymax=5;
+      const x=w=>m.l+(w-xmin)/(xmax-xmin)*pw, y=v=>m.t+ph-(v-ymin)/(ymax-ymin)*ph;
+      ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+      ctx.strokeStyle='#ddd9cf';ctx.lineWidth=1;ctx.font='12px ui-monospace, monospace';ctx.fillStyle='#555';
+      for(let i=0;i<=5;i++){const yy=y(i);ctx.beginPath();ctx.moveTo(m.l,yy);ctx.lineTo(W-m.r,yy);ctx.stroke();ctx.fillText(String(i),28,yy+4)}
+      for(let i=-1;i<=6;i++){const xx=x(i);ctx.beginPath();ctx.moveTo(xx,m.t);ctx.lineTo(xx,H-m.b);ctx.stroke();ctx.fillText(String(i),xx-4,H-22)}
+      ctx.strokeStyle='#111318';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(m.l,m.t);ctx.lineTo(m.l,H-m.b);ctx.lineTo(W-m.r,H-m.b);ctx.stroke();
+      ctx.fillStyle='#111318';ctx.fillText('possible weight w',W/2-55,H-6);ctx.save();ctx.translate(13,H/2+35);ctx.rotate(-Math.PI/2);ctx.fillText('loss',0,0);ctx.restore();
+      function curve(fn,color,dash=[]){ctx.beginPath();for(let i=0;i<=320;i++){const w=xmin+(xmax-xmin)*i/320;const px=x(w),py=y(Math.min(ymax+.2,fn(w)));i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.strokeStyle=color;ctx.lineWidth=3;ctx.setLineDash(dash);ctx.stroke();ctx.setLineDash([])}
+      curve(dataLoss,'#5271ff',[8,6]);curve(w=>penalty(w,lambda),'#ef5da8',[3,5]);curve(w=>total(w,lambda),'#ff7043');
+      const best=4/(1+lambda), dl=dataLoss(best), pen=penalty(best,lambda), tl=dl+pen;
+      ctx.strokeStyle='#111318';ctx.lineWidth=1.5;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(x(best),y(0));ctx.lineTo(x(best),y(Math.min(ymax,tl)));ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#111318';ctx.beginPath();ctx.arc(x(best),y(tl),6,0,Math.PI*2);ctx.fill();
+      const legend=[['data loss','#5271ff'],['weighted penalty','#ef5da8'],['total loss','#ff7043']];legend.forEach((item,i)=>{ctx.fillStyle=item[1];ctx.fillRect(m.l+12+i*145,m.t+10,18,4);ctx.fillStyle='#111318';ctx.fillText(item[0],m.l+37+i*145,m.t+15)});
+      strengthText.textContent=lambda.toFixed(2);optimumReadout.textContent=`best w = ${best.toFixed(2)}`;dataValue.textContent=dl.toFixed(2);penaltyValue.textContent=pen.toFixed(2);totalValue.textContent=tl.toFixed(2);
+    }
+    slider.addEventListener('input',draw);window.addEventListener('resize',draw);draw();
+  </script>
+</body>
+</html>
