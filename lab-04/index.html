@@ -14,8 +14,20 @@
     <header class="hero">
       <p class="kicker"><span>Lab 04 · API activity</span></p>
       <h1>Your first model API calls.</h1>
-      <p class="lede">Use your course OpenRouter key without exposing it, send a small request, inspect the response, and turn sentences into vectors you can compare.</p>
+      <p class="lede">Use a small course-funded account to try language and embedding models from Python. No prior API experience is expected.</p>
     </header>
+
+    <section class="intro" aria-labelledby="api-intro">
+      <div>
+        <p class="eyebrow">What are we doing?</p>
+        <h2 id="api-intro">An API lets one program ask another program to do something.</h2>
+      </div>
+      <div class="intro-copy">
+        <p>When you use a chatbot website, the website handles the request for you. In this lab, your Python code will send the request directly: choose a model, provide some text, and inspect the result that comes back. This is how developers add model capabilities to their own programs.</p>
+        <p>An <strong>API key</strong> is the pass that tells the service which account should pay for a request. Treat it like a password and do not commit it to GitHub or paste it into a shared document. But do not panic: this is a practice account with course credit capped at $40. It cannot expose your bank account, Yale password, or computer. If you accidentally share the key, replace it and let us know.</p>
+        <p>This lab is a safe place to experiment. Try small changes, look at the responses, and notice how each request uses a little of the available credit.</p>
+      </div>
+    </section>
 
     <aside class="notice">
       <strong>This activity is separate from Homework 4.</strong>
@@ -35,12 +47,12 @@
         <p>Use this copy if you prefer Jupyter or VS Code. Set <code>OPENROUTER_API_KEY</code> in your environment rather than writing the key into the notebook.</p>
         <span class="go">Download <code>.ipynb</code> →</span>
       </a>
-      <div class="card orange">
-        <span class="tag">Bring to lab</span>
-        <h2>Your course API key</h2>
-        <p>Copy it from the Yale SOM Token Fund grant page. A usable OpenRouter key begins with <code>sk-or-</code>. A key beginning with <code>ytf</code> manages the funding website and cannot call models.</p>
-        <span class="go">Never paste either key into chat, code, Git, or a screenshot</span>
-      </div>
+      <a class="card orange" href="https://fund.som.chat/account/tokens" target="_blank" rel="noopener noreferrer">
+        <span class="tag">Get your course key</span>
+        <h2>Yale SOM Token Fund</h2>
+        <p>This is a brand-new, vibe-coded portal, and our class is the first to use it—tell us if anything is confusing or breaks. Sign in and copy the OpenRouter key beginning with <code>sk-or-</code>. The separate token beginning with <code>ytf</code> is for the portal itself and cannot call a model.</p>
+        <span class="go">Open fund.som.chat/account/tokens →</span>
+      </a>
     </section>
 
     <footer>CPSC 1710 · Fall 2026 · CC BY 4.0</footer>
