@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Lab 4 activity for CPSC 1710: make secure, small API calls through OpenRouter and inspect what comes back.">
+  <meta name="theme-color" content="#f5f7f3">
+  <title>Lab 4 · Your First Model API Calls</title>
+  <link rel="stylesheet" href="lab-04.css">
+</head>
+<body>
+  <nav class="sitebar"><a href="../index.html">← CPSC 1710 Labs</a></nav>
+  <main class="shell">
+    <header class="hero">
+      <p class="kicker"><span>Lab 04 · API activity</span></p>
+      <h1>Your first model API calls.</h1>
+      <p class="lede">Use your course OpenRouter key without exposing it, send a small request, inspect the response, and turn sentences into vectors you can compare.</p>
+    </header>
+
+    <aside class="notice">
+      <strong>This activity is separate from Homework 4.</strong>
+      Lab time may also include work in the HW4 starter repository and <code>tiny_rnn.py</code>. The API notebook below does not modify or depend on that repository.
+    </aside>
+
+    <section class="cards" aria-label="Lab 4 materials">
+      <a class="card featured" href="https://colab.research.google.com/github/cpsc1710/labs/blob/main/lab-04/openrouter-api-lab.ipynb">
+        <span class="tag">Start here · about 50–60 minutes</span>
+        <h2>Open the API lab in Colab</h2>
+        <p>Store your key as a Colab secret, check your budget, discover the allowed models, make one chat request, and compare text embeddings.</p>
+        <span class="go">Open a runnable copy →</span>
+      </a>
+      <a class="card blue" href="openrouter-api-lab.ipynb" download>
+        <span class="tag">Notebook file</span>
+        <h2>Download the notebook</h2>
+        <p>Use this copy if you prefer Jupyter or VS Code. Set <code>OPENROUTER_API_KEY</code> in your environment rather than writing the key into the notebook.</p>
+        <span class="go">Download <code>.ipynb</code> →</span>
+      </a>
+      <div class="card orange">
+        <span class="tag">Bring to lab</span>
+        <h2>Your course API key</h2>
+        <p>Copy it from the Yale SOM Token Fund grant page. A usable OpenRouter key begins with <code>sk-or-</code>. A key beginning with <code>ytf</code> manages the funding website and cannot call models.</p>
+        <span class="go">Never paste either key into chat, code, Git, or a screenshot</span>
+      </div>
+    </section>
+
+    <footer>CPSC 1710 · Fall 2026 · CC BY 4.0</footer>
+  </main>
+</body>
+</html>

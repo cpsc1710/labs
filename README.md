@@ -7,6 +7,7 @@ Student-facing assignments and starter materials for CPSC 1710, Fall 2026.
 - [Lab 1: Meet a deep-learning notebook](lab-01/)
 - [Lab 2: From one pixel to your classifier](lab-02/)
 - [Lab 3: MNIST, and what the code is doing](lab-03/)
+- [Lab 4: Your first model API calls](lab-04/)
 
 Use the [live course hub](https://cpsc1710.github.io/labs/) for the simplest experience. Each assignment is available as a webpage and a printable PDF.
 
@@ -24,4 +25,4 @@ Then visit `http://localhost:8000/`.
 
 ## Credits
 
-Materials are by [Xiuye Chen](https://github.com/xiuyechen), developed with Codex and Claude, and shared under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+Materials are by [Xiuye Chen](https://github.com/xiuyechen) and shared under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
