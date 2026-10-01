@@ -264,3 +264,5 @@ In two or three sentences, explain the difference between:
 - Rework mistakes from quizzes, labs, and homeworks.
 - Practice tracing small calculations on paper.
 - When writing pseudocode, name what each value represents instead of trying to remember exact library syntax.
+
+*Drafted by Codex (OpenAI), based on the direction of Xiuye Chen.*

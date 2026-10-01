@@ -184,3 +184,5 @@ If ordinary L2 distance were requested, the answer would be `sqrt(5)`. This ques
 3. **Recurrent memory versus attention:** An RNN repeatedly updates a fixed-size hidden state as it moves through the sequence. Attention lets a position directly weight and combine information from earlier positions rather than relying only on a repeatedly updated summary.
 
 Equivalent explanations that correctly distinguish each pair should receive credit.
+
+*Drafted by Codex (OpenAI), based on the direction of Xiuye Chen.*
