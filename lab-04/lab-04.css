@@ -130,6 +130,40 @@ h1 {
 
 .notice strong { color: var(--ink); }
 
+.agenda {
+  display: grid;
+  grid-template-columns: minmax(240px, .8fr) minmax(0, 1.2fr);
+  gap: clamp(30px, 6vw, 72px);
+  margin: 0 0 66px;
+  padding: 30px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.agenda h2,
+.section-heading h2 {
+  margin: 0;
+  font: 520 clamp(1.65rem, 3vw, 2.35rem)/1.12 Georgia, "Times New Roman", serif;
+  letter-spacing: -.02em;
+}
+
+.agenda ol {
+  margin: 0;
+  padding-left: 1.4rem;
+  color: var(--muted);
+}
+
+.agenda li { margin-bottom: 9px; }
+.agenda li:last-child { margin-bottom: 0; }
+.agenda strong { color: var(--ink); }
+
+.section-heading {
+  max-width: 760px;
+  margin: 66px 0 24px;
+}
+
+.section-heading:first-of-type { margin-top: 0; }
+
 .cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -162,6 +196,8 @@ a.card:hover {
 
 .card.blue { background: var(--blue); }
 .card.orange { background: var(--sand); }
+.card.practice { background: linear-gradient(135deg, #e7ecf3, #f4f6f9); }
+.card.answer { min-height: 300px; }
 
 .tag {
   align-self: flex-start;
@@ -211,7 +247,7 @@ footer {
   .sitebar, .shell { width: min(100% - 28px, 1040px); }
   .shell { padding-top: 48px; }
   .hero { margin-bottom: 38px; }
-  .intro { grid-template-columns: 1fr; }
+  .intro, .agenda { grid-template-columns: 1fr; }
   .cards { grid-template-columns: 1fr; }
   .card.featured { grid-column: auto; }
   .card { min-height: 240px; }
