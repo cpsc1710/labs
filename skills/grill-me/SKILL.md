@@ -67,7 +67,7 @@ Adjust to the student as you go. The aim is steady effort without discouragement
 
 The folder is the memory. The next session may be in a different app (Codex or Claude Code), and it will start from these files. Write them in plain language the student can study from. They are the student's notes.
 
-- **`notes/grill-me/progress.md`**: one row per topic with a status (`new`, `shaky`, `getting there`, `solid`), questions asked, questions right, the date last practised, and what to do next. Mark a topic `solid` only after the student has answered it correctly in more than one format and in more than one session. Update the file at each check-in and at the end, so nothing is lost if the session stops suddenly.
+- **`notes/grill-me/progress.md`**: one row per topic with a status (`new`, `shaky`, `getting there`, `solid`), questions asked, questions right, the date last practised, and what to do next. Mark a topic `solid` only after the student has answered it correctly in more than one format and in more than one session. Update the file at each check-in and at the end, so nothing is lost if the session stops suddenly. Keep the table as one block: one row per topic, with no blank lines between rows, or it will not display as a table.
 - **`notes/grill-me/mistakes.md`**: add an entry for each miss: the date, the question in short form, what the student answered, the correct idea in one or two sentences, and where to review it. When the student later gets a variant right, mark the entry fixed. Do not delete entries.
 - **`notes/grill-me/sessions/YYYY-MM-DD.md`**: a short log of the session: how long, which mode, which topics, the score, and what to do next time. Add to the same file if there is more than one session in a day.
 
