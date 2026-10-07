@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Lab 5 for CPSC 1710: walk through a small GPT with a guide, practise pseudocode for the midterm, and finish last week's API calls.">
+  <meta name="theme-color" content="#f5f7f3">
+  <title>Lab 5 · Read a GPT, Write Pseudocode</title>
+  <link rel="stylesheet" href="lab-05.css">
+</head>
+<body>
+  <nav class="sitebar"><a href="../index.html">← CPSC 1710 Labs</a></nav>
+  <main class="shell">
+    <header class="hero">
+      <p class="kicker"><span>Lab 05 · A small GPT, pseudocode, and API calls again</span></p>
+      <h1>Read a GPT. Say it in pseudocode.</h1>
+      <p class="lede">Walk through a small GPT with a guide, practise the pseudocode the midterm asks for, and finish the API calls from last week.</p>
+    </header>
+
+    <section class="intro" aria-labelledby="lab-intro">
+      <div>
+        <p class="eyebrow">What are we doing?</p>
+        <h2 id="lab-intro">Three things, each building on something you have already done.</h2>
+      </div>
+      <div class="intro-copy">
+        <p>On Tuesday we saw how attention lets a model look back. Today you see the whole thing built: a guided tour of Andrej Karpathy's notebook, which makes a small GPT from an empty page. <strong>Homework 5 starts from that tour.</strong></p>
+        <p>Then pseudocode. The midterm is on paper, and several questions ask you to write out steps with no computer. We will look at four answers to a question from Homework 4 and decide together what earns full marks.</p>
+        <p>Last, the API calls from Lab 4. Many course keys did not work last week, so we will run that notebook again, and then write one API call as pseudocode.</p>
+      </div>
+    </section>
+
+    <aside class="notice">
+      <strong>Your Homework 4 feedback.</strong>
+      A one-page summary of what the class said, and what changes this week:
+      <a href="hw4-feedback.html" target="_blank" rel="noopener noreferrer">what you told us in Homework 4</a>.
+    </aside>
+
+    <section class="agenda" aria-labelledby="today-plan">
+      <div>
+        <p class="eyebrow">A 70-minute plan</p>
+        <h2 id="today-plan">Three parts. The homework begins in the first one.</h2>
+      </div>
+      <ol>
+        <li><strong>0–25 minutes:</strong> step through the guided tour together, then open the notebook.</li>
+        <li><strong>25–45 minutes:</strong> pseudocode. Vote on four answers, then compare.</li>
+        <li><strong>45–65 minutes:</strong> run the Lab 4 API notebook with your key, then write one API call as pseudocode.</li>
+        <li><strong>65–70 minutes:</strong> start Homework 5.</li>
+      </ol>
+    </section>
+
+    <div class="section-heading">
+      <p class="eyebrow">Part 1</p>
+      <h2>Read a GPT</h2>
+    </div>
+    <section class="cards" aria-label="GPT notebook materials">
+      <a class="card featured" href="gpt-dev-tour/index.html" target="_blank" rel="noopener noreferrer">
+        <span class="tag">Start here · about 25 minutes</span>
+        <h2>Build a GPT, gently</h2>
+        <p>A step-through guide to the notebook in five moves: text into numbers, the guessing game, a lookup table, attention, and the full model. The notebook's own model runs inside the page, so you can watch it learn and write. Every slide names the notebook cell it is about.</p>
+        <span class="go">Open the guided tour →</span>
+      </a>
+      <a class="card blue" href="https://colab.research.google.com/drive/1JMLa53HDuA-i7ZBmqV7ZnA3c_fvtXnx-?usp=sharing" target="_blank" rel="noopener noreferrer">
+        <span class="tag">The notebook</span>
+        <h2>Open gpt_dev.ipynb in Colab</h2>
+        <p>Andrej Karpathy's notebook, ready to run. Do the tour first, then read the notes and the outputs here. Run the cells down to the first babble.</p>
+        <span class="go">Open in Colab →</span>
+      </a>
+      <a class="card" href="look-back/index.html" target="_blank" rel="noopener noreferrer">
+        <span class="tag">Tuesday's explainer</span>
+        <h2>Look back</h2>
+        <p>The attention idea in 14 slides: the shopping analogy, query, key and value, and a real model's attention. Homework 5's by-hand question uses exactly this.</p>
+        <span class="go">Open the explainer →</span>
+      </a>
+    </section>
+    <p class="more">Optional, two hours: <a href="https://www.youtube.com/watch?v=kCc8FmEb1nY" target="_blank" rel="noopener noreferrer">watch Karpathy build the notebook line by line</a>, with the tour as your map.</p>
+
+    <div class="section-heading">
+      <p class="eyebrow">Part 2</p>
+      <h2>Pseudocode</h2>
+    </div>
+    <section class="cards" aria-label="Pseudocode materials">
+      <a class="card featured practice" href="pseudocode/index.html" target="_blank" rel="noopener noreferrer">
+        <span class="tag">In class · about 15 minutes</span>
+        <h2>Pseudocode, by example</h2>
+        <p>Four answers to the word-tokenizer question from Homework 4. Vote Good, OK or Not yet on each one, then see how we would grade it and how to repair it. The examples were written for this session; none is a classmate's answer.</p>
+        <span class="go">Open the session →</span>
+      </a>
+      <a class="card blue" href="https://github.com/cpsc1710/labs/blob/main/lab-05/Pseudocode_Practice_Questions.md" target="_blank" rel="noopener noreferrer">
+        <span class="tag">New · on paper, no AI</span>
+        <h2>Nine pseudocode problems</h2>
+        <p>Short problems from Weeks 1 to 5: accuracy, gradient descent, overfitting, tokenizers, an RNN loop, temperature and batches. Some ask you to write, some to complete, order or find a mistake.</p>
+        <span class="go">Open the nine problems →</span>
+      </a>
+      <a class="card answer" href="https://github.com/cpsc1710/labs/blob/main/lab-05/Pseudocode_Practice_Answers.md" target="_blank" rel="noopener noreferrer">
+        <span class="tag">Check after attempting</span>
+        <h2>Answers to the nine</h2>
+        <p>One full-marks answer for each problem, what we look for, and a common slip to avoid.</p>
+        <span class="go">Open the answers →</span>
+      </a>
+      <a class="card" href="https://github.com/cpsc1710/labs/blob/main/lab-04/Midterm_Practice_Questions.md" target="_blank" rel="noopener noreferrer">
+        <span class="tag">Midterm practice · questions first</span>
+        <h2>What counts as good pseudocode?</h2>
+        <p>The short expectations guide and the practice questions. Sections A and B are about pseudocode. Attempt one without notes or AI.</p>
+        <span class="go">Open the practice questions →</span>
+      </a>
+      <a class="card answer" href="https://github.com/cpsc1710/labs/blob/main/lab-04/Midterm_Practice_Answers.md" target="_blank" rel="noopener noreferrer">
+        <span class="tag">Check after attempting</span>
+        <h2>Practice answer key</h2>
+        <p>Compare the ideas and the sequence of steps, not the surface syntax. Several forms of pseudocode can express the same correct procedure.</p>
+        <span class="go">Open the answer key →</span>
+      </a>
+    </section>
+
+    <div class="section-heading">
+      <p class="eyebrow">Part 3</p>
+      <h2>API calls, second try</h2>
+    </div>
+    <aside class="notice">
+      <strong>If your key failed last week,</strong>
+      copy it again from the Token Fund page before you start. If it still fails today, tell us straight away instead of debugging alone.
+    </aside>
+    <section class="cards" aria-label="API lab materials">
+      <a class="card featured" href="https://colab.research.google.com/github/cpsc1710/labs/blob/main/lab-04/openrouter-api-lab.ipynb" target="_blank" rel="noopener noreferrer">
+        <span class="tag">Start here · sections 0 to 3, about 15 minutes</span>
+        <h2>Open the API lab in Colab</h2>
+        <p>The Lab 4 notebook again. Store your key as a Colab secret, check your budget, and send one chat request. Stop after section 3 today. The embeddings and the five-model comparison are there if you finish early.</p>
+        <span class="go">Open a runnable copy →</span>
+      </a>
+      <a class="card orange" href="https://fund.som.chat/account/tokens" target="_blank" rel="noopener noreferrer">
+        <span class="tag">Get your course key</span>
+        <h2>Yale SOM Token Fund</h2>
+        <p>Sign in and copy the OpenRouter key beginning with <code>sk-or-</code>. The separate token beginning with <code>ytf</code> is for the portal itself and cannot call a model.</p>
+        <span class="go">Open fund.som.chat/account/tokens →</span>
+      </a>
+      <a class="card blue" href="pseudocode/index.html#8" target="_blank" rel="noopener noreferrer">
+        <span class="tag">Then · about 10 minutes</span>
+        <h2>Write that API call as pseudocode</h2>
+        <p>Put the seven steps of a chat request in order, compare pseudocode with the notebook's code, then write a three-model loop on paper.</p>
+        <span class="go">Open the exercise →</span>
+      </a>
+    </section>
+    <p class="more">For what an API is, how to keep a key safe, and a downloadable copy of the notebook, see the <a href="../lab-04/index.html">Lab 4 page</a>.</p>
+
+    <div class="section-heading">
+      <p class="eyebrow">Optional</p>
+      <h2>Going further</h2>
+    </div>
+    <section class="cards" aria-label="Optional extension">
+      <a class="card featured" href="https://colab.research.google.com/github/cpsc1710/labs/blob/main/lab-05/going-further.ipynb" target="_blank" rel="noopener noreferrer">
+        <span class="tag">Optional · needs a GPU runtime</span>
+        <h2>From the tiny GPT to the models you call</h2>
+        <p>Four steps up from the notebook's 209,729 parameters. Train a model 50 times larger on the same Shakespeare. Read stories from a model that uses word pieces. Watch a billion-parameter open model at four points in its training. Then call the kind of model you used in Lab 4.</p>
+        <span class="go">Open in Colab →</span>
+      </a>
+    </section>
+
+    <aside class="notice end">
+      <strong>Homework 5 comes out on Canvas today.</strong>
+      It begins with the guided tour in Part 1, so you have already started.
+    </aside>
+
+    <footer>
+      <span>CPSC 1710 · Fall 2026 · CC BY 4.0</span>
+      <span>Drafted by Claude (Anthropic), based on the direction of Xiuye Chen.</span>
+    </footer>
+  </main>
+</body>
+</html>
