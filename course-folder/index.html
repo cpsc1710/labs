@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="CPSC 1710 guide: keep the whole course in one folder, open it with Codex or Claude Code, and practise for the midterm with the grill-me skill.">
+  <meta name="theme-color" content="#f5f7f3">
+  <title>One Folder for the Whole Course · CPSC 1710</title>
+  <link rel="stylesheet" href="guide.css">
+</head>
+<body>
+  <nav class="sitebar"><a href="../index.html">← CPSC 1710 Labs</a></nav>
+  <main class="shell">
+    <header class="hero">
+      <p class="kicker"><span>Guide · for Codex or Claude Code</span></p>
+      <h1>One folder for the whole course.</h1>
+      <p class="lede">Keep every handout, lab, homework and note for CPSC 1710 in one folder, and open that folder with your AI coding agent. Then the agent can see the whole course, and so can you.</p>
+    </header>
+
+    <section class="intro" aria-labelledby="why">
+      <div>
+        <p class="eyebrow">Why do this?</p>
+        <h2 id="why">Several of you said the course material is spread over too many places.</h2>
+      </div>
+      <div class="intro-copy">
+        <p>Canvas, the labs site, Google Docs, Colab and GitHub each hold a piece. An AI coding agent reads the files in the folder you open it in. If everything is in that folder, you can ask it where a topic was covered, have it explain a file at your level, or have it quiz you before the midterm.</p>
+        <p>The setup takes about five minutes. You paste one prompt and your agent builds the folder. It also installs <strong>grill-me</strong>, a practice partner for the midterm that keeps notes on what you have covered.</p>
+        <p>Either agent works, and you can switch between them. Both read the same files.</p>
+      </div>
+    </section>
+
+    <section class="step">
+      <div class="num">1</div>
+      <div>
+        <h2>Make an empty folder</h2>
+        <p>Create a new folder called <code>cpsc1710</code>, for example inside Documents. Start with it empty. You will add your own files in step 4.</p>
+      </div>
+    </section>
+
+    <section class="step">
+      <div class="num">2</div>
+      <div>
+        <h2>Open the folder in your agent</h2>
+        <ul>
+          <li><strong>Desktop app</strong> (Codex or Claude Code): start a new session and choose the <code>cpsc1710</code> folder as the place to work.</li>
+          <li><strong>VS Code:</strong> open the folder with File → Open Folder, then open the Codex or Claude Code panel.</li>
+          <li><strong>Terminal:</strong> go into the folder with <code>cd</code>, then run <code>codex</code> or <code>claude</code>.</li>
+        </ul>
+        <p>Check that the agent is working in <code>cpsc1710</code> and not in your home folder. You can ask it: "Which folder are you working in?"</p>
+      </div>
+    </section>
+
+    <section class="step">
+      <div class="num">3</div>
+      <div>
+        <h2>Paste this prompt</h2>
+        <div class="prompt main">Set up this folder as my CPSC 1710 course folder. Read the instructions at https://raw.githubusercontent.com/cpsc1710/labs/main/course-folder/SETUP.md and follow them here. Tell me in plain words what you are doing at each step.</div>
+        <p>Your agent will ask for permission to download from github.com. Say yes. It then makes the folders, saves a copy of the labs site, installs the practice skill, and adds a short instruction file for itself. When it finishes, your folder looks like this:</p>
+<pre class="tree">cpsc1710/
+├── AGENTS.md          <span class="c">how the agent should behave here, including the course's AI rules</span>
+├── README.md          <span class="c">a map of the folder, for you</span>
+├── course/
+│   ├── labs/          <span class="c">a copy of the labs site: lab pages, notebooks, practice questions</span>
+│   ├── handouts/      <span class="c">empty: for files you download from Canvas</span>
+│   └── slides/        <span class="c">empty: for lecture slides</span>
+├── work/              <span class="c">your own homework and lab work</span>
+├── notes/             <span class="c">your notes, and study notes the agent writes for you</span>
+└── projects/          <span class="c">final project and experiments</span></pre>
+        <p>If you use both agents, you only need to do this once. The folder works for both.</p>
+      </div>
+    </section>
+
+    <section class="step">
+      <div class="num">4</div>
+      <div>
+        <h2>Add your own files, and keep everything</h2>
+        <table class="where">
+          <tr><th>What</th><th>Where it goes</th></tr>
+          <tr><td>Homework handouts from Canvas</td><td><code>course/handouts/</code> Download each one as a PDF.</td></tr>
+          <tr><td>Lecture slides</td><td><code>course/slides/</code></td></tr>
+          <tr><td>Your homework and code</td><td><code>work/</code> One folder for each assignment, such as <code>work/hw4/</code>.</td></tr>
+          <tr><td>Your notes</td><td><code>notes/</code> Any format.</td></tr>
+        </table>
+        <p>Do not tidy by deleting. Old files cost nothing, and they are what lets the agent answer "where did we see this before?"</p>
+        <p>When new lab material is posted, say this to your agent:</p>
+        <div class="prompt">Update my course folder.</div>
+      </div>
+    </section>
+
+    <section class="step">
+      <div class="num">5</div>
+      <div>
+        <h2>Ask across the whole course</h2>
+        <p>Try one of these. Change the topic to something you are unsure about.</p>
+        <div class="prompt">Where in this folder is temperature explained? List the files and say which one to read first.</div>
+        <div class="prompt">I am new to Python. Explain course/labs/lab-04/openrouter-api-lab.ipynb one cell at a time. Before each cell, ask me to guess what it does.</div>
+        <div class="prompt">Make a one-page map of Weeks 1 to 5: each idea in one sentence, with the file where it lives. Save it in notes/.</div>
+      </div>
+    </section>
+
+    <section class="step">
+      <div class="num">6</div>
+      <div>
+        <h2>Practise for the midterm with grill-me</h2>
+        <p>The midterm is on paper, with no notes and no AI. The best preparation is answering questions, and <strong>grill-me</strong> asks them. Start it by saying what you want:</p>
+        <div class="prompt">Grill me on Week 4 for 15 minutes.</div>
+        <p>You can also type <code>$grill-me</code> in Codex or <code>/grill-me</code> in Claude Code. If the skill does not appear, close the app and open it again.</p>
+        <ul>
+          <li><strong>One question at a time.</strong> It waits for your answer before it says anything else.</li>
+          <li><strong>It adjusts to you.</strong> Get two right and the questions get harder. Miss one and it stays on that idea, then brings it back later.</li>
+          <li><strong>It uses the exam's formats:</strong> multiple choice, ordering, a small calculation by hand, pseudocode, short explanations.</li>
+          <li><strong>It keeps notes</strong> in <code>notes/grill-me/</code>: your progress by topic, a list of what you missed with the right idea next to each, and a log of every session. The next session starts from those notes, in either agent.</li>
+        </ul>
+        <p>Other things to ask for:</p>
+        <div class="prompt">Give me a ten-question mock exam. No feedback until the end.</div>
+        <div class="prompt">Grill me on my weak spots.</div>
+        <div class="prompt">Pseudocode practice: let me write one, then check it against the four checks.</div>
+        <p><strong>Three habits that make it work.</strong> Write by-hand and pseudocode answers on paper before you type them. Do the course's own practice sets yourself, on paper, before asking the agent about them. Say "I don't know" when you don't: it will give a hint, not the answer.</p>
+      </div>
+    </section>
+
+    <aside class="notice end">
+      <strong>The course's rules still apply in this folder.</strong>
+      The agent's instruction file tells it not to answer homework questions marked "No AI", not to write your reflections, and never to write an API key into a file. If it offers to do one of those, say no. What your agent reads is sent to its provider, as in any other session, so keep private documents out of the folder.
+    </aside>
+
+    <div class="section-heading">
+      <p class="eyebrow">For the curious</p>
+      <h2>What was installed</h2>
+    </div>
+    <section class="cards" aria-label="Source files">
+      <a class="card" href="https://github.com/cpsc1710/labs/tree/main/skills/grill-me" target="_blank" rel="noopener noreferrer">
+        <span class="tag">The skill</span>
+        <h2>grill-me on GitHub</h2>
+        <p>A skill is a short instruction file that an agent loads when a task calls for it. This one is a page of plain English. Read it, and change your copy if you want it to behave differently.</p>
+        <span class="go">Read the skill →</span>
+      </a>
+      <a class="card blue" href="https://github.com/cpsc1710/labs/blob/main/course-folder/SETUP.md" target="_blank" rel="noopener noreferrer">
+        <span class="tag">The setup instructions</span>
+        <h2>What the prompt tells your agent to do</h2>
+        <p>The setup prompt points your agent at this file. It is written for the agent, and it is short enough to read before you run it.</p>
+        <span class="go">Read the instructions →</span>
+      </a>
+    </section>
+
+    <footer>
+      <span>CPSC 1710 · Fall 2026 · CC BY 4.0</span>
+      <span>Drafted by Claude (Anthropic), based on the direction of Xiuye Chen.</span>
+    </footer>
+  </main>
+  <script>
+    // a Copy button on every prompt box
+    document.querySelectorAll('.prompt').forEach(function (box) {
+      var text = box.textContent, b = document.createElement('button');
+      b.type = 'button'; b.textContent = 'Copy';
+      b.onclick = function () {
+        navigator.clipboard.writeText(text).then(function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1500); });
+      };
+      box.appendChild(b);
+    });
+  </script>
+</body>
+</html>
