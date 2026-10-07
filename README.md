@@ -12,6 +12,10 @@ Student-facing assignments and starter materials for CPSC 1710, Fall 2026.
 
 Use the [live course hub](https://cpsc1710.github.io/labs/) for the simplest experience. Each assignment is available as a webpage and a printable PDF.
 
+## Guides
+
+- [One folder for the whole course](course-folder/): set up a course folder for Codex or Claude Code, with the `grill-me` midterm practice skill
+
 ## Opening the files
 
 The HTML files have no build step. After cloning, open `index.html` directly in Chrome, Safari, or Firefox. Avoid VS Code's **Open Preview** for these files: its internal `file+.vscode-resource` links do not work as normal browser addresses.
