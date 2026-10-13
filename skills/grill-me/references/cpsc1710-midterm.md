@@ -4,7 +4,7 @@ Read this when the student is preparing for the CPSC 1710 midterm (Fall 2026). I
 
 ## The exam
 
-- Paper and pen, closed book, in class. No AI and no notes.
+- Paper and pen, in class. Notes on paper are allowed. No devices and no AI.
 - It covers the course through Week 5.
 - Pseudocode is welcome. Valid Python is not required.
 - The date, length and point values are on Canvas. Do not guess them. If the student asks, say you do not know and point them to Canvas.
@@ -100,4 +100,4 @@ A few pages in `course/labs/` are single files of several megabytes with model w
 ## Course rules that apply while practising
 
 - Each homework question carries a label saying what AI may do. If a question is labelled "No AI", do not help answer it. Offer to practise the same idea with a different example once the student has made their own attempt.
-- Quizzes and exams are closed book. Do not help during one.
+- Quizzes are closed book. The midterm allows notes on paper, with no devices and no AI. Do not help during a quiz or an exam.
