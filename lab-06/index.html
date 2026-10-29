@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="CPSC 1710 Lab 6: explore sampling and text watermarking with a three-letter model. Parts 1 and 2 are the core lab; Parts 3–5 are optional extensions.">
+<title>Lab 6 · Watermarking Text with a Secret Key · CPSC 1710</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Public+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column of prose; each interactive bench widens a little past it, like a lab notebook with apparatus set on the page. */
+:root {
+  --paper: #EEF2EF;
+  --panel: #FAFCFA;
+  --ink: #17262A;
+  --muted: #56676A;
+  --line: #C3CFCB;
+  --accent: #1D6A5A;
+  --accent-soft: #D3E7DF;
+  --coin: #7E3768;
+  --coin-soft: #EFDCE8;
+  --dice: #3E5F7C;
+  --dice-soft: #DCE6EF;
+  --la: #3B73A6;
+  --lb: #A97B12;
+  --lc: #9C4E3A;
+  --good: #2C7A4B;
+  --bad: #B03A3A;
+  --display: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #111A1B; --panel: #172325; --ink: #E2EAE7; --muted: #9AABA8; --line: #31423F;
+    --accent: #5CC2A5; --accent-soft: #1D3A33; --coin: #D98BC0; --coin-soft: #3D2336;
+    --dice: #8FB2D3; --dice-soft: #1F2D3A; --la: #7DB0E0; --lb: #DDB55A; --lc: #E08B72;
+    --good: #6CCB8F; --bad: #EE8080; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #111A1B; --panel: #172325; --ink: #E2EAE7; --muted: #9AABA8; --line: #31423F;
+  --accent: #5CC2A5; --accent-soft: #1D3A33; --coin: #D98BC0; --coin-soft: #3D2336;
+  --dice: #8FB2D3; --dice-soft: #1F2D3A; --la: #7DB0E0; --lb: #DDB55A; --lc: #E08B72;
+  --good: #6CCB8F; --bad: #EE8080; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { color-scheme: light; }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+.back { font-size: 15px; color: var(--accent); text-decoration: none; }
+.back:hover { text-decoration: underline; }
+footer.site { max-width: 980px; margin: 56px auto 0; padding-top: 18px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; font-size: 13px; color: var(--muted); }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px; margin: 0;
+}
+main { max-width: 980px; margin: 0 auto; display: grid; gap: 56px; }
+.prose { max-width: 680px; display: grid; gap: 14px; }
+.prose p, .prose ul { margin: 0; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(32px, 6vw, 50px); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: clamp(24px, 4vw, 31px); font-weight: 600; }
+h3 { font-size: 19px; font-weight: 600; }
+.eyebrow { font-family: var(--mono); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.lede { font-size: 19px; color: var(--ink); }
+.sec { display: grid; gap: 20px; }
+.secnum { font-family: var(--mono); color: var(--muted); font-size: 14px; letter-spacing: 0.06em; }
+code, .mono { font-family: var(--mono); font-size: 0.92em; }
+a { color: var(--accent); }
+.pi-strip { font-family: var(--mono); font-size: 15px; color: var(--muted); overflow-wrap: anywhere; line-height: 1.8; }
+.pi-strip b { color: var(--ink); font-weight: 600; }
+
+/* benches = interactive panels */
+.bench { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 16px; min-width: 0; }
+.bench-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
+.bench-head .tag { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.cols { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 24px; align-items: start; }
+@media (max-width: 720px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+.note { border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; color: var(--ink); max-width: 680px; }
+.note.assume { border-left-color: var(--coin); }
+.note .label { display: block; font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+blockquote { margin: 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); max-width: 680px; }
+blockquote cite { display: block; margin-top: 6px; font-style: normal; font-size: 14px; color: var(--muted); }
+
+/* controls */
+.btns { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button, select { font: inherit; font-size: 15px; }
+button {
+  border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 6px; padding: 7px 13px; cursor: pointer;
+}
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); font-weight: 600; }
+button:focus-visible, select:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+select { border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 6px; padding: 6px 8px; }
+label.inline { font-size: 15px; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+.small { font-size: 14px; color: var(--muted); }
+
+/* letters */
+.ch { display: inline-flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 600; width: 1.5em; height: 1.6em; border-radius: 4px; }
+.l0 { background: color-mix(in srgb, var(--la) 22%, var(--panel)); color: var(--la); }
+.l1 { background: color-mix(in srgb, var(--lb) 22%, var(--panel)); color: var(--lb); }
+.l2 { background: color-mix(in srgb, var(--lc) 22%, var(--panel)); color: var(--lc); }
+.tape { font-family: var(--mono); font-size: 19px; display: flex; flex-wrap: wrap; gap: 3px; min-height: 2em; align-content: flex-start; }
+.tape .ch.new { outline: 2px solid var(--ink); }
+
+/* matrix */
+table.mx { border-collapse: collapse; font-family: var(--mono); font-size: 16px; font-variant-numeric: tabular-nums; }
+table.mx th { font-weight: 600; padding: 4px 8px; color: var(--muted); }
+table.mx td { padding: 6px 10px; text-align: center; border: 1px solid var(--line); }
+table.mx tr.on td { background: var(--dice-soft); }
+table.mx td.hit { outline: 2px solid var(--ink); outline-offset: -2px; font-weight: 600; }
+.axis { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+
+/* number line */
+.line-wrap { position: relative; padding-top: 34px; padding-bottom: 22px; }
+.bar { display: flex; height: 40px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
+.bar > div { display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 15px; font-weight: 600; min-width: 0; overflow: hidden; }
+.bar > div.hit { box-shadow: inset 0 0 0 3px var(--ink); }
+.ticks { position: absolute; left: 0; right: 0; bottom: 0; height: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.ticks span { position: absolute; transform: translateX(-50%); }
+.dart { position: absolute; top: 0; transform: translateX(-50%); text-align: center; font-family: var(--mono); font-size: 13px; color: var(--dice); transition: left .35s ease; white-space: nowrap; }
+.dart::after { content: ""; display: block; width: 0; height: 0; margin: 2px auto 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 11px solid var(--dice); }
+.dart.pi { color: var(--coin); }
+.dart.pi::after { border-top-color: var(--coin); }
+
+/* check strip */
+.check { display: flex; flex-wrap: wrap; gap: 4px; }
+.check .cell { display: grid; justify-items: center; gap: 2px; font-family: var(--mono); font-size: 13px; }
+.check .mark { font-size: 15px; font-weight: 600; }
+.check .ok { color: var(--good); }
+.check .no { color: var(--bad); }
+.check .cell.gone .ch { opacity: .35; text-decoration: line-through; }
+.result { font-weight: 600; }
+
+/* lookup table */
+table.look { border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums; }
+table.look th, table.look td { border-bottom: 1px solid var(--line); padding: 6px 12px; text-align: left; }
+table.look th { font-weight: 600; color: var(--muted); font-size: 13px; }
+.scroll-x { overflow-x: auto; max-width: 100%; }
+
+/* key tables */
+.keys { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 560px) { .keys { grid-template-columns: minmax(0, 1fr); } }
+.ktab h4 { margin: 0 0 4px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.ktab table { border-collapse: collapse; font-family: var(--mono); font-size: 14px; width: 100%; }
+.ktab th { color: var(--muted); font-weight: 600; padding: 2px 4px; font-size: 12px; }
+.ktab td { border: 1px solid var(--line); text-align: center; padding: 3px 2px; }
+.ktab td b { font-size: 16px; }
+.ktab td small { color: var(--muted); font-size: 11px; margin-left: 3px; }
+.ktab td.one { background: var(--coin-soft); color: var(--coin); }
+.ktab tr.on th { color: var(--ink); }
+.ktab tr.on td { border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
+.ktab.live h4 { color: var(--coin); }
+
+/* bracket */
+.bracket { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(8, 34px); gap: 4px 10px; max-width: 520px; }
+.bracket-head .colh { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.slot { display: flex; align-items: center; gap: 6px; align-self: center; font-family: var(--mono); font-size: 15px; transition: opacity .3s; }
+.slot .coin { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--coin); color: var(--coin); align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+.slot .coin.c1 { background: var(--coin); color: var(--panel); }
+.slot.lost { opacity: .3; }
+.slot .tie { font-size: 11px; color: var(--dice); }
+.slot.champ .ch { outline: 2px solid var(--ink); }
+.inputs { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 5px; }
+.rec { display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: 14px; }
+.rec h4 { margin: 0; font-family: var(--display); font-size: 17px; font-weight: 600; }
+.rec p { margin: 0; font-size: 15px; max-width: 760px; }
+.rec table.look td, .rec table.look th { padding: 5px 9px; font-size: 14px; vertical-align: middle; }
+.rec table.look td .ch { margin-right: 4px; }
+.bracket-head { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; max-width: 520px; }
+
+/* detector */
+textarea { width: 100%; font-family: var(--mono); font-size: 15px; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); resize: vertical; min-height: 64px; }
+.heat { font-family: var(--mono); font-size: 15px; display: flex; flex-wrap: wrap; gap: 1px; line-height: 1; }
+.heat span { padding: 4px 2px; border-radius: 2px; min-width: 1.05em; text-align: center; }
+.h0 { background: transparent; color: var(--muted); }
+.h1 { background: color-mix(in srgb, var(--coin) 18%, var(--panel)); }
+.h2 { background: color-mix(in srgb, var(--coin) 40%, var(--panel)); }
+.h3 { background: color-mix(in srgb, var(--coin) 70%, var(--panel)); color: var(--panel); }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 13px; color: var(--muted); }
+.legend .heat span { padding: 3px 6px; }
+.heat button { border: 0; padding: 4px 2px; border-radius: 2px; min-width: 1.05em; font: inherit; line-height: 1; cursor: pointer; }
+.heat button.sel { outline: 2px solid var(--ink); outline-offset: 1px; }
+.lookup { display: grid; gap: 10px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding-block: 12px; }
+.lookup p { margin: 0; font-size: 15px; }
+.ktab td.hit { outline: 3px solid var(--ink); outline-offset: -3px; }
+.readout { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 560px) { .readout { grid-template-columns: minmax(0, 1fr); } }
+.readout > div { border-top: 2px solid var(--line); padding-top: 6px; }
+.readout .k { font-size: 13px; color: var(--muted); }
+.readout .v { font-family: var(--mono); font-size: 22px; font-variant-numeric: tabular-nums; }
+.verdict { display: inline-block; padding: 3px 10px; border-radius: 999px; font-weight: 600; font-size: 15px; }
+.verdict.strong { background: var(--accent); color: var(--panel); }
+.verdict.weak { background: var(--accent-soft); color: var(--accent); }
+.verdict.none { background: var(--dice-soft); color: var(--dice); }
+svg text { fill: var(--muted); font-family: var(--mono); font-size: 11px; }
+.hist-wrap { overflow-x: auto; }
+.try { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+
+/* comparison table */
+table.cmp { border-collapse: collapse; width: 100%; font-size: 15px; }
+table.cmp th, table.cmp td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+table.cmp thead th { font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+table.cmp tbody th { font-weight: 600; }
+ul.limits { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 680px; }
+.sources { font-size: 14px; color: var(--muted); max-width: 680px; }
+.sources ol { padding-left: 20px; margin: 6px 0 0; display: grid; gap: 4px; }
+@media (prefers-reduced-motion: reduce) { .dart, .slot { transition: none; } }
+
+/* Core path and optional extensions */
+.lab-path { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 15px; margin-top: 8px; }
+.core-finish { border-left: 3px solid var(--accent); padding-left: 18px; }
+.optional { min-width: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.optional > summary { cursor: pointer; padding: 22px; }
+.optional > summary::marker { color: var(--accent); }
+.optional > summary h2 { display: inline; margin-left: 8px; }
+.optional > summary .secnum { display: block; margin-bottom: 8px; }
+.optional > summary .small { display: block; margin-top: 10px; }
+.optional > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 10px; }
+.optional[open] > summary { border-bottom: 1px solid var(--line); }
+.optional > .sec { padding: 24px; }
+section, #further { scroll-margin-top: 24px; }
+@media (max-width: 560px) { .optional > summary, .optional > .sec { padding: 16px; } }
+</style>
+</head>
+<body>
+<main>
+  <header class="prose">
+    <a class="back" href="../index.html">← CPSC 1710 Labs</a>
+    <div class="eyebrow">CPSC 1710 · Lab 06 · Sampling and watermarking</div>
+    <h1>Watermarking text with a secret key</h1>
+    <p class="lede">Last lab, you explored how a GPT predicts what comes next. Here, a three-letter model lets you see how probabilities become text, and how a key can guide those choices. Work through Parts 1 and 2. The longer extensions in Parts 3–5 are optional. No coding or API key is needed.</p>
+    <nav class="lab-path" aria-label="Lab sections">
+      <a href="#dice">Part 1 · The table and the dice</a>
+      <a href="#pi">Part 2 · Replace the dice with pi</a>
+      <a href="#further">Optional · Parts 3–5</a>
+    </nav>
+  </header>
+
+  <!-- 1 -->
+  <section class="sec" id="dice">
+    <div class="prose">
+      <div class="secnum">Part 1 · Core lab</div>
+      <h2>The table and the dice</h2>
+      <p>Each row of the table gives the chances of the next letter. To pick one, lay the row out on a line from 0 to 1, roll a random number <i>r</i>, and take the letter whose segment <i>r</i> lands in. That letter becomes the current letter, and we repeat.</p>
+    </div>
+    <div class="bench">
+      <div class="bench-head"><h3>Sampling with dice</h3><span class="tag">a toy table</span></div>
+      <div class="cols">
+        <div>
+          <div class="axis" style="margin-left:42px">next letter →</div>
+          <table class="mx" id="a-mx"></table>
+          <p class="small" style="margin:10px 0 0">Each row adds up to 1.</p>
+        </div>
+        <div style="display:grid;gap:14px;min-width:0">
+          <div class="small">Row used for the last roll: <span id="a-cur"></span></div>
+          <div class="line-wrap"><div class="dart" id="a-dart" hidden></div><div class="bar" id="a-bar"></div><div class="ticks" id="a-ticks"></div></div>
+          <div class="tape" id="a-tape" aria-live="polite"></div>
+          <div class="btns"><button class="primary" id="a-step">Roll the dice</button><button id="a-run">Roll 20 times</button><button id="a-reset">Start over</button></div>
+        </div>
+      </div>
+    </div>
+    <p class="note"><span class="label">What the text keeps</span>The finished text does not record which numbers were rolled. Two people with different dice get different text, and nobody can tell afterward which dice produced it.</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="sec" id="pi">
+    <div class="prose">
+      <div class="secnum">Part 2 · Core lab</div>
+      <h2>Replace the dice with pi</h2>
+      <p>Anthropic describes its watermark as a change to that one step. Instead of a random number generator, the model uses</p>
+    </div>
+    <blockquote>“the key and a few words that come before to settle what word the model should pick.”<cite>Anthropic, <a href="https://www.anthropic.com/news/claude-text-watermark" target="_blank" rel="noopener">How Claude's text watermarking works</a>, August 2026</cite></blockquote>
+    <div class="prose">
+      <p>Pi is a good stand-in for that kind of number source. Its digits look random, but anyone who knows where to read gets the same digits every time. Here are its first digits after the decimal point:</p>
+      <p class="pi-strip" id="pi-first"></p>
+      <p>There are two obvious ways to use them. We will try both.</p>
+    </div>
+
+    <div class="bench">
+      <div class="bench-head"><h3>Try 1. Read pi in order</h3><span class="tag">r for letter t = digits 2t−1 and 2t</span></div>
+      <p class="small" style="margin:0">The first letter uses <i>r</i> = 0.14, the second 0.15, the third 0.92, and so on. Everything else is the same as the dice.</p>
+      <div class="line-wrap"><div class="dart pi" id="b1-dart" hidden></div><div class="bar" id="b1-bar"></div><div class="ticks" id="b1-ticks"></div></div>
+      <div class="tape" id="b1-tape"></div>
+      <div class="btns"><button class="primary" id="b1-step">Next letter</button><button id="b1-run">Write 16 letters</button><button id="b1-reset">Start over</button></div>
+      <div style="border-top:1px solid var(--line);padding-top:14px;display:grid;gap:10px">
+        <h3>Checking a text</h3>
+        <p class="small" style="margin:0">A checker who knows the rule reads pi in order and replays each choice. A ✓ means the letter is the one pi would have chosen.</p>
+        <div class="check" id="b1-check"></div>
+        <div class="btns"><button id="b1-del">Delete letter 5</button><span class="result" id="b1-res"></span></div>
+      </div>
+    </div>
+    <p class="note"><span class="label">What goes wrong</span>The check works only while every letter keeps its original position. Delete one letter and everything after it is compared with the wrong digits, so the ✓ marks after that point are only chance matches.</p>
+
+    <div class="bench">
+      <div class="bench-head"><h3>Try 2. Read pi based on the previous letter</h3><span class="tag">r depends on the letter before</span></div>
+      <p class="small" style="margin:0">The <b>key</b> is the place in pi where we start reading. After an <i>a</i> we read the two digits at the key; after a <i>b</i>, the next two; after a <i>c</i>, the two after that. Now the checker does not need positions, only the letter before.</p>
+      <div class="btns"><label class="inline" for="b2-key">Key: start at digit</label><select id="b2-key"></select></div>
+      <div class="scroll-x"><table class="look" id="b2-look"></table></div>
+      <div class="btns"><span class="small">Write 18 letters starting from</span><button id="b2-a">a</button><button id="b2-b">b</button><button id="b2-c">c</button></div>
+      <div class="tape" id="b2-tape"></div>
+    </div>
+    <p class="note"><span class="label">What goes wrong</span>Whatever the key, each letter now always leads to the same next letter, so the text falls into a loop within a few steps. With a real model the lookup uses several previous words, so exact repeats are rarer, but the same prompt would still give the same answer every time. The dice gave us variety, and we need to keep it.</p>
+  </section>
+
+  <aside class="prose core-finish">
+    <div class="secnum">End of the core lab</div>
+    <h2>Before you move on</h2>
+    <p>Explain how a probability row and a number between 0 and 1 choose the next letter. Then explain why reading pi in order breaks after a deletion, and why using only the previous letter produces loops.</p>
+  </aside>
+  <div class="prose" id="further">
+    <div class="eyebrow">Optional extensions</div>
+    <h2>Going further</h2>
+    <p>Parts 1 and 2 complete the core lab. The sections below take more time and build on one another: start with Part 3 to see how the watermark keeps variety, then try detecting it in Part 4. Each section is folded until you open it.</p>
+  </div>
+  <!-- 3 -->
+  <details class="optional">
+    <summary><span class="secnum">Part 3 · Optional</span><h2>Keep the dice, let pi referee</h2><span class="small">Explore tournament sampling, step by step. Expand to explore.</span></summary>
+    <section class="sec" id="tournament" aria-label="Part 3: Keep the dice, let pi referee">
+    <div class="prose">
+      <p>Anthropic says Claude's watermark is a version of SynthID-Text, a method published by Google DeepMind. SynthID-Text keeps both sources of numbers. The dice draw several candidate letters from the model's row. The candidates then play a knockout tournament. In each round, pi gives every candidate a coin, 0 or 1, based on the previous letter and the candidate letter. The higher coin wins the match, and a tie is settled by the dice.</p>
+    </div>
+    <div class="note assume"><span class="label">Everything that goes into each letter</span>
+      <ul class="inputs">
+        <li><b>The probability table.</b> The 3 × 3 table from Part 1.</li>
+        <li><b>The dice.</b> A computer random number generator that gives numbers between 0 and 1. It starts from a fixed seed, 11, so the page opens the same way each time and “Start over” replays the same rolls. Real dice or a different seed would work the same way.</li>
+        <li><b>The key.</b> A starting position in pi. The default is digit 1.</li>
+        <li><b>The coin rule.</b> A digit from 5 to 9 gives a 1-coin. A digit from 0 to 4 gives a 0-coin.</li>
+        <li><b>Which digit each coin uses.</b> Count a = 0, b = 1, c = 2. The coin for a candidate in a given round uses digit number key + 9 × (round − 1) + 3 × (previous letter) + (candidate letter). This is the same as filling the tables row by row.</li>
+        <li><b>Context.</b> Only the one previous letter. Every text starts with a.</li>
+        <li><b>Candidates.</b> 8 per letter, each drawn with its own dice roll from the previous letter's row. Repeats are allowed.</li>
+        <li><b>Matches.</b> Candidate 1 plays 2, 3 plays 4, and so on. Winners keep their order for the next round.</li>
+        <li><b>Ties.</b> One more dice roll. Below 0.5, the first player wins. Otherwise the second wins.</li>
+        <li><b>Size.</b> 3 rounds. Anthropic has not published its exact algorithm or settings. This follows the published SynthID-Text design at a very small size.</li>
+      </ul>
+    </div>
+    <div class="bench">
+      <div class="bench-head"><h3>The key tables</h3><span class="tag" id="c-keytag"></span></div>
+      <p class="small" style="margin:0">Each round has its own table. Rows are the previous letter and columns are the candidate. The tables are filled with digits of pi in order, starting at the key and going row by row. Round 1 takes the first nine digits, round 2 the next nine, and round 3 the nine after that. Each digit becomes a coin: 5 to 9 gives a 1 and 0 to 4 gives a 0. Shaded cells are 1-coins, and the small number in each cell is the digit it came from.</p>
+      <p class="small" style="margin:0"><b>Example with key 1.</b> Pi starts 3.1415 9265 35… In round 1, row <i>a</i> uses the digits 1, 4, 1, so its coins are 0, 0, 0. Row <i>b</i> uses the next three digits, 5, 9, 2, so its coins are 1, 1, 0.</p>
+      <div class="btns"><label class="inline" for="c-key">Key: start at digit</label><select id="c-key"></select></div>
+      <div class="keys" id="c-keys"></div>
+    </div>
+    <div class="bench">
+      <div class="bench-head"><h3>One tournament per letter</h3><span class="tag" id="c-stage">ready</span></div>
+      <div class="small">Previous letter <span id="c-prev"></span> · its row of the table: <span class="mono" id="c-row"></span></div>
+      <div class="bracket-head"><span class="colh">8 candidates (dice)</span><span class="colh">Round 1 winners</span><span class="colh">Round 2 winners</span><span class="colh">Next letter</span></div>
+      <div class="bracket" id="c-bracket"></div>
+      <div class="tape" id="c-tape"></div>
+      <div class="btns"><button class="primary" id="c-step">Play next letter</button><button id="c-run">Write 30 letters</button><button id="c-reset">Start over</button></div>
+      <div class="rec" id="c-rec" aria-live="polite"></div>
+    </div>
+    <div class="prose">
+      <p><b>Where the dice still are.</b> The dice choose the candidates and break ties. Every candidate comes from the model's own row, so the tournament never picks a letter the model would not have considered. Pi only decides which of those candidates wins.</p>
+      <p><b>What the key leaves behind.</b> Letters that hold 1-coins win more often than their probability alone would give them. Over many letters, the text holds more 1-coins than text written with plain dice. That surplus is the watermark.</p>
+    </div>
+  </section>
+  </details>
+
+  <!-- 4 -->
+  <details class="optional">
+    <summary><span class="secnum">Part 4 · Optional</span><h2>Checking a text for the watermark</h2><span class="small">Try a detector, change the key, and edit the text. Expand to explore.</span></summary>
+    <section class="sec" id="detect" aria-label="Part 4: Checking a text for the watermark">
+    <div class="prose">
+      <p>The detector reads the text one letter at a time. Suppose the text has a <i>b</i> followed by an <i>a</i>. To check the <i>a</i>, the detector goes to row <i>b</i>, column <i>a</i> in each of the three key tables and reads the coin there. That gives three coins for this letter.</p>
+      <p>During writing, letters holding 1-coins won more of their tournaments, so watermarked text collects more 1-coins than ordinary text. The score is the share of all the coins that are 1. The detector needs only the text and the key. It does not run the model or use the probability table.</p>
+    </div>
+    <p class="note assume"><span class="label">Assumption</span>With only three letters, the score of ordinary text is not exactly 0.5; it depends on the key. So this detector compares a text with 300 ordinary texts of the same length, simulated with plain dice. With a vocabulary of many thousands of tokens, ordinary text averages close to 0.5 for any key.</p>
+    <div class="bench">
+      <div class="bench-head"><h3>Detector</h3><span class="tag">only a, b and c count</span></div>
+      <div class="btns">
+        <label class="inline" for="d-len">Length</label><select id="d-len"><option>20</option><option>60</option><option selected>150</option><option>400</option></select>
+        <label class="inline" for="d-wkey">Writer's key</label><select id="d-wkey"></select>
+      </div>
+      <div class="btns"><button class="primary" id="d-mark">Write with the watermark</button><button id="d-plain">Write with plain dice</button><button id="d-edit">Change 1 in 4 letters</button></div>
+      <textarea id="d-text" rows="3" spellcheck="false" aria-label="Text to check, using the letters a, b and c"></textarea>
+      <div class="btns"><label class="inline" for="d-dkey">Detector's key</label><select id="d-dkey"></select></div>
+      <p class="small" style="margin:0">Click any letter below to see how its three coins were found.</p>
+      <div class="heat" id="d-heat"></div>
+      <div class="legend"><span>1-coins per letter:</span><span class="heat"><span class="h0">0</span><span class="h1">1</span><span class="h2">2</span><span class="h3">3</span></span></div>
+      <div class="lookup" id="d-look"></div>
+      <div class="readout">
+        <div><div class="k">Score of this text</div><div class="v" id="d-score">–</div></div>
+        <div><div class="k">Ordinary texts scoring at least this high</div><div class="v" id="d-p">–</div></div>
+        <div><div class="k">Verdict</div><div style="padding-top:4px"><span class="verdict" id="d-verdict">–</span></div></div>
+      </div>
+      <div class="hist-wrap"><svg id="d-hist" viewBox="0 0 640 190" width="100%" role="img" aria-label="Score distributions for ordinary and watermarked text"></svg></div>
+      <div class="legend"><span><svg width="26" height="10" aria-hidden="true"><rect width="26" height="10" style="fill:var(--dice);opacity:.45"></rect></svg> 300 ordinary texts</span><span><svg width="26" height="10" aria-hidden="true"><rect width="26" height="10" style="fill:var(--accent);opacity:.55"></rect></svg> 300 watermarked texts</span><span><svg width="26" height="10" aria-hidden="true"><rect x="12" width="2.5" height="10" style="fill:var(--ink)"></rect></svg> this text</span></div>
+    </div>
+    <div class="prose">
+      <h3>Things to try</h3>
+      <ol class="try">
+        <li>Set the length to 20. The two groups overlap, so a short text cannot be judged.</li>
+        <li>Give the detector a different key from the writer. The watermarked text then scores like ordinary text.</li>
+        <li>Press “Change 1 in 4 letters” a few times. Each rewrite weakens the signal, and a full rewrite removes it.</li>
+        <li>Type your own string of a, b and c, and see whether you can make it look watermarked without the key tables.</li>
+      </ol>
+    </div>
+  </section>
+  </details>
+
+  <!-- 5 -->
+  <details class="optional">
+    <summary><span class="secnum">Part 5 · Optional</span><h2>From the toy to Claude</h2><span class="small">Compare the toy with the real method and read about its limits. Expand to explore.</span></summary>
+    <section class="sec" id="real" aria-label="Part 5: From the toy to Claude">
+    <div class="prose">
+    </div>
+    <div class="scroll-x">
+      <table class="cmp">
+        <thead><tr><th></th><th>This page</th><th>Claude, as Anthropic describes it</th></tr></thead>
+        <tbody>
+          <tr><th>Vocabulary</th><td>3 letters</td><td>Many thousands of tokens</td></tr>
+          <tr><th>Key</th><td>A starting digit of pi. Anyone could try every start in a few seconds.</td><td>A secret key. Without it the pattern cannot be detected.</td></tr>
+          <tr><th>Context</th><td>The 1 previous letter</td><td>“A few words that come before”</td></tr>
+          <tr><th>Method</th><td>3-round tournament over 8 dice-drawn candidates</td><td>A version of SynthID-Text. Exact settings are not published.</td></tr>
+          <tr><th>Detection</th><td>Anyone on this page, with the key tables</td><td>A detection API in private preview for eligible organizations such as regulators, researchers, educators and fact-checkers</td></tr>
+          <tr><th>Effect on the text</th><td>Same letters the table allows, in different proportions</td><td>No hidden characters or extra tokens. Anthropic reports no measurable change in quality.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose"><h3>Where every number on this page comes from</h3>
+      <p>The “dice” are mulberry32, a short, standard random number generator. Given the same seed, it produces the same sequence of numbers, so every result on this page can be reproduced.</p>
+    </div>
+    <div class="scroll-x">
+      <table class="cmp">
+        <thead><tr><th>Part</th><th>Source of numbers</th><th>Seed or starting point</th></tr></thead>
+        <tbody>
+          <tr><th>1. Dice</th><td>Generator, one roll per letter</td><td>Seed 7. “Start over” replays the same rolls.</td></tr>
+          <tr><th>2. Try 1</th><td>Pi digits 1 and 2 for the first letter, 3 and 4 for the second, and so on</td><td>No dice</td></tr>
+          <tr><th>2. Try 2</th><td>Two pi digits per previous letter, starting at the key</td><td>No dice. Key chosen in the menu.</td></tr>
+          <tr><th>3. Tournament</th><td>Generator for the 8 candidates and for ties. Pi for the coins.</td><td>Seed 11 for the dice. Key chosen in the menu.</td></tr>
+          <tr><th>4. Detector buttons</th><td>Generator for writing text and for “Change 1 in 4 letters”, which swaps a letter for one of the other two</td><td>Seed 2026, continuing from click to click</td></tr>
+          <tr><th>4. Histograms</th><td>300 plain and 300 watermarked texts, written by the generator</td><td>Seed key × 7919 + length, so each setting draws the same histogram every time</td></tr>
+          <tr><th>Pi</th><td>The first 1,000 digits after the decimal point</td><td>Computed ahead of time with Machin's formula and stored in the page</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose"><h3>Limits Anthropic lists</h3></div>
+    <ul class="limits">
+      <li><b>Short passages.</b> Detection does not work well on small samples, as the 20-letter setting above shows.</li>
+      <li><b>Few real choices.</b> Factual answers and code leave little room to choose. If a row of the table were 1, 0, 0, all eight candidates would be the same letter and the tournament could not leave a mark. Where code must be exact, the watermark is not applied.</li>
+      <li><b>Light edits by Claude.</b> When Claude only proofreads human writing, the mark can live only in the few corrected words.</li>
+      <li><b>Rewriting.</b> Light editing probably will not remove it. A complete rewrite where every word is replaced will.</li>
+      <li><b>What a positive result means.</b> It says Claude was likely involved, not that Claude wrote the text. Claude may have translated, summarized or edited it. The mark carries no information about the user, organization or conversation.</li>
+      <li><b>What a negative result means.</b> It does not show a person wrote the text. Other AI systems use different keys or none, and older Claude models were still being covered during a transition period.</li>
+    </ul>
+    <div class="sources">
+      <p>Adapted from the <a href="https://glbl5053.github.io/labs/week-06/watermarking.html">GLBL 5053 watermarking page</a>.</p>
+      <b>Sources</b>
+      <ol>
+        <li>Anthropic, <a href="https://www.anthropic.com/news/claude-text-watermark" target="_blank" rel="noopener">How Claude's text watermarking works</a> (August 14, 2026).</li>
+        <li>Claude Help Center, <a href="https://support.claude.com/en/articles/16266773-how-claude-marks-ai-generated-content" target="_blank" rel="noopener">How Claude marks AI-generated content</a>.</li>
+        <li>Dathathri et al., “Scalable watermarking for identifying large language model outputs,” <i>Nature</i> 634 (2024). This is the SynthID-Text paper that describes tournament sampling.</li>
+      </ol>
+    </div>
+  </section>
+  </details>
+</main>
+<footer class="site"><span>CPSC 1710 · Fall 2026 · CC BY 4.0</span><span>Original page drafted by Claude (Anthropic). Drafted by Codex (OpenAI), based on the direction of Xiuye Chen.</span></footer>
+
+<script>
+(() => {
+  // Open an optional section when following a link to content inside it.
+  function revealHash() {
+    const target = document.getElementById(location.hash.slice(1));
+    const fold = target && target.closest('details');
+    if (fold) { fold.open = true; target.scrollIntoView(); }
+  }
+  window.addEventListener('hashchange', revealHash);
+  revealHash();
+  const PI = "1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094330572703657595919530921861173819326117931051185480744623799627495673518857527248912279381830119491298336733624406566430860213949463952247371907021798609437027705392171762931767523846748184676694051320005681271452635608277857713427577896091736371787214684409012249534301465495853710507922796892589235420199561121290219608640344181598136297747713099605187072113499999983729780499510597317328160963185950244594553469083026425223082533446850352619311881710100031378387528865875332083814206171776691473035982534904287554687311595628638823537875937519577818577805321712268066130019278766111959092164201989";
+  const dig = (i) => +PI[i - 1];               // i-th digit after the decimal point, 1-based
+  const V = ['a', 'b', 'c'];
+  const P = [[0.3, 0.6, 0.1], [0.1, 0.6, 0.3], [0.3, 0.0, 0.7]];
+  const KEYS = [1, 100, 314, 762];
+  const ROUNDS = 3, NCAND = 8;
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = (id) => document.getElementById(id);
+  const chip = (j, cls = '') => `<span class="ch l${j} ${cls}">${V[j]}</span>`;
+  const pick = (row, r) => { let a = 0; for (let j = 0; j < 3; j++) { a += row[j]; if (r < a && row[j] > 0) return j; } return 2; };
+  function mulberry32(s) { return () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const coin = (key, l, p, x) => (dig(key + 9 * l + 3 * p + x) >= 5 ? 1 : 0);
+  const fmt = (x, d = 2) => x.toFixed(d);
+
+  // shared number-line renderer
+  function drawLine(prefix, row, hit, r) {
+    $(prefix + '-bar').innerHTML = row.map((p, j) => p > 0 ? `<div class="l${j}${hit === j ? ' hit' : ''}" style="width:${p * 100}%">${V[j]} ${p}</div>` : '').join('');
+    let acc = 0; const t = ['<span style="left:0%">0</span>'];
+    row.forEach((p) => { if (p > 0) { acc += p; t.push(`<span style="left:${acc * 100}%">${fmt(acc, 1)}</span>`); } });
+    $(prefix + '-ticks').innerHTML = t.join('');
+    const d = $(prefix + '-dart');
+    if (r == null) d.hidden = true; else { d.hidden = false; d.style.left = (r * 100) + '%'; d.textContent = 'r = ' + fmt(r); }
+  }
+  const tapeHTML = (arr, markLast = true) => arr.map((j, i) => chip(j, markLast && i === arr.length - 1 && arr.length > 1 ? 'new' : '')).join('');
+
+  // ---------- Part 1: dice ----------
+  const A = { cur: 0, out: [0], rnd: mulberry32(7), last: null, r: null };
+  function aRender() {
+    const rowI = A.prev ?? A.cur;
+    $('a-mx').innerHTML = '<tr><th></th>' + V.map((v) => `<th>${v}</th>`).join('') + '</tr>' +
+      P.map((row, i) => `<tr class="${i === rowI ? 'on' : ''}"><th>${V[i]}</th>` + row.map((p, j) => `<td class="${i === A.prev && j === A.last ? 'hit' : ''}">${p.toFixed(1)}</td>`).join('') + '</tr>').join('');
+    $('a-cur').innerHTML = chip(rowI);
+    drawLine('a', P[rowI], A.last, A.r);
+    $('a-tape').innerHTML = tapeHTML(A.out);
+  }
+  function aStep() { const r = A.rnd(); const j = pick(P[A.cur], r); A.prev = A.cur; A.last = j; A.r = r; A.cur = j; A.out.push(j); }
+  $('a-step').onclick = () => { aStep(); aRender(); };
+  $('a-run').onclick = () => { for (let i = 0; i < 20; i++) aStep(); aRender(); };
+  $('a-reset').onclick = () => { Object.assign(A, { cur: 0, out: [0], rnd: mulberry32(7), last: null, r: null, prev: undefined }); aRender(); };
+  aStep(); aStep(); aStep(); aRender();
+
+  // ---------- Part 2a: pi in order ----------
+  $('pi-first').innerHTML = '3.' + Array.from({ length: 20 }, (_, i) => `<b>${PI.slice(2 * i, 2 * i + 2)}</b>`).join(' ') + ' …';
+  const rAt = (t) => (dig(2 * t - 1) * 10 + dig(2 * t)) / 100;  // r for letter t (t = 1, 2, ...)
+  const B1 = { out: [0], deleted: false };
+  function b1Step() { const t = B1.out.length; const prev = B1.out[t - 1]; const r = rAt(t); const j = pick(P[prev], r); B1.out.push(j); B1.lastPrev = prev; B1.lastJ = j; B1.lastR = r; }
+  function b1Render() {
+    if (B1.out.length > 1) drawLine('b1', P[B1.lastPrev], B1.lastJ, B1.lastR); else drawLine('b1', P[0], null, null);
+    $('b1-tape').innerHTML = tapeHTML(B1.out);
+    const text = B1.deleted && B1.out.length > 5 ? B1.out.filter((_, i) => i !== 4) : B1.out;
+    let ok = 0, n = 0, html = `<div class="cell">${chip(text[0])}<span class="mark small">start</span></div>`;
+    for (let t = 1; t < text.length; t++) {
+      const pred = pick(P[text[t - 1]], rAt(t)); const good = pred === text[t]; ok += good; n++;
+      html += `<div class="cell">${chip(text[t])}<span class="mark ${good ? 'ok' : 'no'}">${good ? '✓' : '✗'}</span></div>`;
+    }
+    $('b1-check').innerHTML = html;
+    $('b1-res').textContent = n ? `${ok} of ${n} letters match` : '';
+    const del = $('b1-del'); del.disabled = B1.out.length <= 5; del.textContent = B1.deleted ? 'Undo the deletion' : 'Delete letter 5';
+  }
+  $('b1-step').onclick = () => { b1Step(); b1Render(); };
+  $('b1-run').onclick = () => { while (B1.out.length < 17) b1Step(); b1Render(); };
+  $('b1-reset').onclick = () => { B1.out = [0]; B1.deleted = false; b1Render(); };
+  $('b1-del').onclick = () => { B1.deleted = !B1.deleted; b1Render(); };
+  while (B1.out.length < 13) b1Step(); b1Render();
+
+  // ---------- Part 2b: pi by previous letter ----------
+  const keyOpts = (sel, val) => { sel.innerHTML = KEYS.map((k) => `<option value="${k}"${k === val ? ' selected' : ''}>${k}</option>`).join(''); };
+  keyOpts($('b2-key'), 1);
+  const b2r = (key, p) => (dig(key + 2 * p) * 10 + dig(key + 2 * p + 1)) / 100;
+  let b2Start = 0;
+  function b2Render() {
+    const key = +$('b2-key').value;
+    let html = '<tr><th>Previous letter</th><th>Digits read</th><th>r</th><th>Next letter</th></tr>';
+    for (let p = 0; p < 3; p++) {
+      const r = b2r(key, p);
+      html += `<tr><td>${chip(p)}</td><td class="mono">${key + 2 * p}–${key + 2 * p + 1}: ${dig(key + 2 * p)}${dig(key + 2 * p + 1)}</td><td class="mono">${fmt(r)}</td><td>${chip(pick(P[p], r))} <span class="small">always</span></td></tr>`;
+    }
+    $('b2-look').innerHTML = html;
+    const out = [b2Start];
+    while (out.length < 18) { const p = out[out.length - 1]; out.push(pick(P[p], b2r(key, p))); }
+    $('b2-tape').innerHTML = out.map((j) => chip(j)).join('');
+  }
+  $('b2-key').onchange = b2Render;
+  [0, 1, 2].forEach((j) => { $('b2-' + V[j]).onclick = () => { b2Start = j; b2Render(); }; });
+  b2Render();
+
+  // ---------- Tournament core ----------
+  function tournament(key, prev, rnd) {
+    const draws = Array.from({ length: NCAND }, () => { const r = rnd(); return { r, j: pick(P[prev], r) }; });
+    let ent = draws.map((d) => d.j);
+    const rounds = [], matches = [];
+    for (let l = 0; l < ROUNDS; l++) {
+      const info = [], next = [], ms = [];
+      for (let i = 0; i < ent.length; i += 2) {
+        const a = ent[i], b = ent[i + 1], ga = coin(key, l, prev, a), gb = coin(key, l, prev, b);
+        let w, tr = null; const tie = ga === gb;
+        if (ga > gb) w = 0; else if (gb > ga) w = 1; else { tr = rnd(); w = tr < 0.5 ? 0 : 1; }
+        info.push({ j: a, g: ga, win: w === 0, tie }, { j: b, g: gb, win: w === 1, tie });
+        ms.push({ a, b, ga, gb, pa: key + 9 * l + 3 * prev + a, pb: key + 9 * l + 3 * prev + b, tr, w });
+        next.push(w === 0 ? a : b);
+      }
+      rounds.push(info); matches.push(ms); ent = next;
+    }
+    return { draws, rounds, matches, winner: ent[0] };
+  }
+  const plainNext = (prev, rnd) => pick(P[prev], rnd());
+
+  // ---------- Part 3: key tables + bracket ----------
+  keyOpts($('c-key'), 1);
+  const C = { out: [0], rnd: mulberry32(11), game: null, stage: 0, timers: [] };
+  function keyTables(key, prev, hit, liveRound) {
+    let html = '';
+    for (let l = 0; l < ROUNDS; l++) {
+      html += `<div class="ktab${liveRound === l ? ' live' : ''}"><h4>Round ${l + 1} · digits ${key + 9 * l}–${key + 9 * l + 8}</h4><table><tr><th></th>${V.map((v) => `<th>${v}</th>`).join('')}</tr>`;
+      for (let p = 0; p < 3; p++) {
+        html += `<tr class="${p === prev ? 'on' : ''}"><th>${V[p]}</th>`;
+        for (let x = 0; x < 3; x++) { const d = dig(key + 9 * l + 3 * p + x); html += `<td class="${d >= 5 ? 'one' : ''}${p === prev && x === hit ? ' hit' : ''}"><b>${d >= 5 ? 1 : 0}</b><small>${d}</small></td>`; }
+        html += '</tr>';
+      }
+      html += '</table></div>';
+    }
+    return html;
+  }
+  function cKeys(liveRound) {
+    const key = +$('c-key').value, prev = C.game ? C.gamePrev : C.out[C.out.length - 1];
+    $('c-keytag').textContent = `digits ${key}–${key + 26} of pi`;
+    $('c-keys').innerHTML = keyTables(key, prev, null, liveRound);
+  }
+  function cBracket() {
+    const g = C.game, s = C.stage, el = $('c-bracket');
+    const prev = g ? C.gamePrev : C.out[C.out.length - 1];
+    $('c-prev').innerHTML = chip(prev);
+    $('c-row').textContent = V.map((v, j) => `${v} ${P[prev][j]}`).join(' · ');
+    if (!g) { el.innerHTML = ''; $('c-stage').textContent = 'ready'; return; }
+    let html = '';
+    for (let col = 0; col < 4; col++) {
+      const n = NCAND >> col, span = 8 / n;
+      for (let i = 0; i < n; i++) {
+        if (s < col) continue;
+        let j, coinHTML = '', cls = '';
+        if (col < ROUNDS) {
+          const e = g.rounds[col][i]; j = e.j;
+          if (s > col) { coinHTML = `<span class="coin ${e.g ? 'c1' : ''}">${e.g}</span>`; if (!e.win) cls = 'lost'; else if (e.tie) coinHTML += '<span class="tie">won by dice</span>'; }
+        } else { j = g.winner; cls = 'champ'; }
+        html += `<div class="slot ${cls}" style="grid-column:${col + 1};grid-row:${i * span + 1} / span ${span}">${chip(j)}${coinHTML}</div>`;
+      }
+    }
+    el.innerHTML = html;
+    $('c-stage').textContent = ['candidates drawn', 'round 1 played', 'round 2 played', 'round 3 played', 'letter added'][Math.min(s, 4)];
+  }
+  function segText(row) { let a = 0; return row.map((p, j) => { if (!p) return null; const t = `${V[j]} covers ${fmt(a, 1)} to ${fmt(a + p, 1)}`; a += p; return t; }).filter(Boolean).join(', '); }
+  function cRecord() {
+    const el = $('c-rec'), g = C.game, s = C.stage;
+    if (!g) { el.innerHTML = '<p class="small">Press “Play next letter” to see every number used for one letter.</p>'; return; }
+    const key = +$('c-key').value, prev = C.gamePrev;
+    const coinCell = (j, pos, c) => `${chip(j)} digit ${pos} is ${dig(pos)}, coin ${c}`;
+    let h = `<h4>Every number used for ${s >= 4 ? 'the last letter written' : 'this letter'}</h4>`;
+    h += `<p><b>Step 1. Draw 8 candidates with the dice.</b> The previous letter is ${chip(prev)}, so each roll is placed on row ${V[prev]}: ${segText(P[prev])}.</p>`;
+    h += `<div class="scroll-x"><table class="look"><tr><th>Candidate</th>${g.draws.map((_, i) => `<td>${i + 1}</td>`).join('')}</tr><tr><th>Dice roll</th>${g.draws.map((d) => `<td class="mono">${fmt(d.r, 3)}</td>`).join('')}</tr><tr><th>Letter</th>${g.draws.map((d) => `<td>${chip(d.j)}</td>`).join('')}</tr></table></div>`;
+    for (let l = 0; l < ROUNDS && s > l; l++) {
+      const ms = g.matches[l], cs = ms.flatMap((m) => [m.ga, m.gb]), same = cs.every((c) => c === cs[0]);
+      const uses = V.map((v, x) => { const pos = key + 9 * l + 3 * prev + x; return `${v} uses digit ${pos} (${dig(pos)})`; }).join(', ');
+      h += `<p><b>Round ${l + 1}.</b> Coins come from row ${V[prev]} of the round ${l + 1} table: ${uses}.${same ? ' Every player has the same coin this round, so the key has no say and the dice settle every match.' : ''}</p>`;
+      h += `<div class="scroll-x"><table class="look"><tr><th>Match</th><th>First player</th><th>Second player</th><th>Result</th></tr>` + ms.map((m, i) => {
+        const win = m.w === 0 ? m.a : m.b;
+        const res = m.tr == null ? `${chip(win)} wins with the higher coin` : `Tie. Dice roll ${fmt(m.tr, 3)} is ${m.tr < 0.5 ? 'below' : 'not below'} 0.5, so the ${m.w === 0 ? 'first' : 'second'} player, ${chip(win)}, wins`;
+        return `<tr><td>${i + 1}</td><td>${coinCell(m.a, m.pa, m.ga)}</td><td>${coinCell(m.b, m.pb, m.gb)}</td><td>${res}</td></tr>`;
+      }).join('') + '</table></div>';
+    }
+    if (s >= ROUNDS) h += `<p><b>Result.</b> ${chip(g.winner)} wins round 3 and becomes the next letter.</p>`;
+    el.innerHTML = h;
+  }
+  function cRender() { cKeys(C.game && C.stage < ROUNDS ? C.stage : null); cBracket(); cRecord(); $('c-tape').innerHTML = tapeHTML(C.out); }
+  function cClear() { C.timers.forEach(clearTimeout); C.timers = []; }
+  function cNewGame() {
+    const prev = C.out[C.out.length - 1];
+    C.gamePrev = prev; C.game = tournament(+$('c-key').value, prev, C.rnd); C.stage = 0;
+  }
+  $('c-step').onclick = () => {
+    cClear(); cNewGame(); cRender();
+    const dt = reduce ? 150 : 750;
+    for (let s = 1; s <= 4; s++) C.timers.push(setTimeout(() => { C.stage = s; if (s === 4) C.out.push(C.game.winner); cRender(); }, dt * s));
+  };
+  $('c-run').onclick = () => {
+    cClear(); for (let i = 0; i < 30; i++) { cNewGame(); C.out.push(C.game.winner); }
+    C.stage = 4; cRender();
+  };
+  $('c-reset').onclick = () => { cClear(); C.out = [0]; C.rnd = mulberry32(11); C.game = null; C.stage = 0; cRender(); };
+  $('c-key').onchange = () => { cClear(); C.game = null; cRender(); };
+  // opening state: a few letters written and one tournament shown in full
+  for (let i = 0; i < 5; i++) { cNewGame(); C.out.push(C.game.winner); }
+  C.stage = 4; cRender();
+
+  // ---------- Part 4: detector ----------
+  const D = { rnd: mulberry32(2026), cache: new Map() };
+  keyOpts($('d-wkey'), 1); keyOpts($('d-dkey'), 1);
+  function write(key, n, marked, rnd) { const out = [0]; while (out.length < n) { const p = out[out.length - 1]; out.push(marked ? tournament(key, p, rnd).winner : plainNext(p, rnd)); } return out; }
+  function score(key, s) { let t = 0, m = 0; for (let i = 1; i < s.length; i++) for (let l = 0; l < ROUNDS; l++) { t += coin(key, l, s[i - 1], s[i]); m++; } return m ? t / m : NaN; }
+  function sims(key, n) {
+    const id = key + ':' + n; if (D.cache.has(id)) return D.cache.get(id);
+    const rnd = mulberry32(key * 7919 + n); const plain = [], marked = [];
+    for (let i = 0; i < 300; i++) { plain.push(score(key, write(key, n, false, rnd))); marked.push(score(key, write(key, n, true, rnd))); }
+    const v = { plain, marked }; D.cache.set(id, v); return v;
+  }
+  const toIdx = (str) => [...str.toLowerCase()].map((c) => V.indexOf(c)).filter((j) => j >= 0);
+  function dRender() {
+    const s = toIdx($('d-text').value), key = +$('d-dkey').value;
+    if (!(D.sel >= 1 && D.sel < s.length)) D.sel = 1;
+    let heat = '';
+    s.forEach((j, i) => { if (i === 0) { heat += `<span class="h0">${V[j]}</span>`; return; } let c = 0; for (let l = 0; l < ROUNDS; l++) c += coin(key, l, s[i - 1], j); heat += `<button type="button" class="h${c}${i === D.sel ? ' sel' : ''}" data-i="${i}" aria-label="Letter ${i + 1}, ${c} of 3 coins are 1">${V[j]}</button>`; });
+    $('d-heat').innerHTML = heat || '<span class="small">Type some a, b and c letters, or use a button above.</span>';
+    dLookup(s, key);
+    const verdict = $('d-verdict');
+    if (s.length < 2) { $('d-score').textContent = '–'; $('d-p').textContent = '–'; verdict.textContent = 'Need more text'; verdict.className = 'verdict none'; drawHist(null, null); return; }
+    const sc = score(key, s), sim = sims(key, s.length);
+    const above = sim.plain.filter((x) => x >= sc - 1e-9).length / sim.plain.length;
+    $('d-score').textContent = fmt(sc);
+    $('d-p').textContent = Math.round(above * 300) + ' of 300';
+    if (above <= 0.01) { verdict.textContent = 'Watermark detected'; verdict.className = 'verdict strong'; }
+    else if (above <= 0.1) { verdict.textContent = 'Weak signal'; verdict.className = 'verdict weak'; }
+    else { verdict.textContent = 'No clear signal'; verdict.className = 'verdict none'; }
+    drawHist(sim, sc);
+  }
+  const WORDS = ['None', 'One', 'Two', 'All three'];
+  function dLookup(s, key) {
+    const el = $('d-look');
+    if (s.length < 2) { el.innerHTML = ''; return; }
+    const i = D.sel, p = s[i - 1], x = s[i];
+    const coins = [0, 1, 2].map((l) => coin(key, l, p, x)), c = coins.reduce((a, b) => a + b, 0);
+    el.innerHTML = `<p><b>Letter ${i + 1}</b> is ${chip(x)} and the letter before it is ${chip(p)}. In each key table, go to row ${V[p]}, column ${V[x]}.</p>` +
+      `<div class="keys">${keyTables(key, p, x, null)}</div>` +
+      `<p>The three coins are ${coins.join(', ')}. ${WORDS[c]} of them ${c === 1 ? 'is' : 'are'} 1, so this letter is shaded at level ${c}.</p>`;
+  }
+  $('d-heat').onclick = (e) => { const b = e.target.closest('button[data-i]'); if (!b) return; D.sel = +b.dataset.i; dRender(); const nb = $('d-heat').querySelector(`button[data-i="${D.sel}"]`); if (nb) nb.focus(); };
+  function drawHist(sim, sc) {
+    const W = 640, H = 190, L = 30, R = 14, T = 12, B = 34, bins = 40;
+    const x = (v) => L + v * (W - L - R);
+    let svg = `<line x1="${L}" y1="${H - B}" x2="${W - R}" y2="${H - B}" style="stroke:var(--line)"></line>`;
+    for (const t of [0, 0.25, 0.5, 0.75, 1]) svg += `<line x1="${x(t)}" y1="${H - B}" x2="${x(t)}" y2="${H - B + 5}" style="stroke:var(--line)"></line><text x="${x(t)}" y="${H - B + 18}" text-anchor="middle">${t}</text>`;
+    svg += `<text x="${(W + L - R) / 2}" y="${H - 2}" text-anchor="middle">score: share of 1-coins</text>`;
+    if (sim) {
+      const count = (arr) => { const c = new Array(bins).fill(0); arr.forEach((v) => c[Math.min(bins - 1, Math.floor(v * bins))]++); return c; };
+      const cp = count(sim.plain), cm = count(sim.marked), mx = Math.max(...cp, ...cm);
+      const bw = (W - L - R) / bins, hh = H - B - T;
+      const bars = (c, color, op) => c.map((k, i) => k ? `<rect x="${L + i * bw + 0.5}" y="${H - B - (k / mx) * hh}" width="${bw - 1}" height="${(k / mx) * hh}" style="fill:${color};opacity:${op}"></rect>` : '').join('');
+      svg += bars(cp, 'var(--dice)', 0.45) + bars(cm, 'var(--accent)', 0.55);
+      svg += `<line x1="${x(sc)}" y1="${T - 4}" x2="${x(sc)}" y2="${H - B}" style="stroke:var(--ink);stroke-width:2.5"></line>`;
+    }
+    $('d-hist').innerHTML = svg;
+  }
+  function dFill(marked) { const n = +$('d-len').value, key = +$('d-wkey').value; D.sel = 1; $('d-text').value = write(key, n, marked, D.rnd).map((j) => V[j]).join(''); dRender(); }
+  $('d-mark').onclick = () => dFill(true);
+  $('d-plain').onclick = () => dFill(false);
+  $('d-edit').onclick = () => {
+    const s = toIdx($('d-text').value);
+    for (let i = 1; i < s.length; i++) if (D.rnd() < 0.25) s[i] = (s[i] + 1 + Math.floor(D.rnd() * 2)) % 3;
+    $('d-text').value = s.map((j) => V[j]).join(''); dRender();
+  };
+  $('d-text').oninput = dRender;
+  $('d-dkey').onchange = dRender;
+  dFill(true);
+})();
+</script>
+</body>
+</html>
