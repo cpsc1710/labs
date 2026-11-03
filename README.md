@@ -10,6 +10,7 @@ Student-facing assignments and starter materials for CPSC 1710, Fall 2026.
 - [Lab 4: Your first model API calls](lab-04/)
 - [Lab 5: Read a GPT, write pseudocode](lab-05/)
 - [Lab 6: Watermarking text with a secret key](lab-06/): Parts 1 and 2 form the core lab; Parts 3–5 are optional and collapsed by default
+- [Lab 7: A tiny agent](lab-07/): build a small agent in Colab and run it with models from frontier size down to a tiny one
 
 Use the [live course hub](https://cpsc1710.github.io/labs/) for the simplest experience. Each assignment is available as a webpage and a printable PDF.
 
